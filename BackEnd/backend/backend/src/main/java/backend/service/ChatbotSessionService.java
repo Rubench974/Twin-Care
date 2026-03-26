@@ -1,0 +1,136 @@
+package backend.service;
+
+import backend.dto.ChatbotAnswerRequest;
+import backend.dto.ChatbotQuestionDto;
+import backend.dto.ChatbotSessionResponse;
+import backend.entity.*;
+import backend.dao.AppUtilisateurRepository;
+import backend.dao.DossierPatientRepository;
+import backend.dao.InteractionChatbotRepository;
+import org.springframework.stereotype.Service;
+
+import java.time.Month;
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
+public class ChatbotSessionService {
+
+    private final AppUtilisateurRepository AppUtilisateurRepository;
+    private final DossierPatientRepository dossierPatientRepository;
+    private final InteractionChatbotRepository interactionChatbotRepository;
+    private final ChatbotTriggerEngineService triggerEngineService;
+
+    public ChatbotSessionService(AppUtilisateurRepository AppUtilisateurRepository,
+                                 DossierPatientRepository dossierPatientRepository,
+                                 InteractionChatbotRepository interactionChatbotRepository,
+                                 ChatbotTriggerEngineService triggerEngineService) {
+        this.AppUtilisateurRepository = AppUtilisateurRepository;
+        this.dossierPatientRepository = dossierPatientRepository;
+        this.interactionChatbotRepository = interactionChatbotRepository;
+        this.triggerEngineService = triggerEngineService;
+    }
+
+    public ChatbotSessionResponse demarrerSession(Long patientId) {
+        AppUtilisateur patient = AppUtilisateurRepository.findById(patientId)
+                .orElseThrow(() -> new RuntimeException("Patient introuvable"));
+
+        DossierPatient dossier = dossierPatientRepository.findByPatientId(patientId)
+                .orElseThrow(() -> new RuntimeException("Dossier introuvable"));
+
+        PatientProfile profile = buildPatientProfile(patient, dossier);
+        List<ChatbotQuestionDto> questions = triggerEngineService.selectQuestions(profile);
+
+        ChatbotSessionResponse response = new ChatbotSessionResponse();
+        response.setPatientId(patientId);
+        response.setDossierId(dossier.getId());
+        response.setQuestions(questions);
+
+        return response;
+    }
+
+    public InteractionChatbot enregistrerReponse(Long patientId, Long dossierId, ChatbotAnswerRequest request) {
+        AppUtilisateur patient = AppUtilisateurRepository.findById(patientId)
+                .orElseThrow(() -> new RuntimeException("Patient introuvable"));
+
+        DossierPatient dossier = dossierPatientRepository.findById(dossierId)
+                .orElseThrow(() -> new RuntimeException("Dossier introuvable"));
+
+        InteractionChatbot interaction = new InteractionChatbot();
+        interaction.setPatient(patient);
+        interaction.setDossierPatient(dossier);
+        interaction.setQuestionId(request.getQuestionId());
+        interaction.setQuestion(request.getQuestion());
+        interaction.setCategorie(request.getCategorie());
+
+        TypeReponseChatbot type = TypeReponseChatbot.valueOf(request.getTypeReponse());
+        interaction.setTypeReponse(type);
+
+        if (type == TypeReponseChatbot.OUI_NON) {
+            if (request.getReponseTexte() == null ||
+                    (!"OUI".equalsIgnoreCase(request.getReponseTexte()) &&
+                     !"NON".equalsIgnoreCase(request.getReponseTexte()))) {
+                throw new RuntimeException("Réponse OUI/NON invalide");
+            }
+            interaction.setReponseTexte(request.getReponseTexte().toUpperCase());
+        }
+
+        if (type == TypeReponseChatbot.ECHELLE_1_5) {
+            if (request.getReponseNumerique() == null || request.getReponseNumerique() < 1 || request.getReponseNumerique() > 5) {
+                throw new RuntimeException("La réponse doit être comprise entre 1 et 5");
+            }
+            interaction.setReponseNumerique(request.getReponseNumerique());
+        }
+
+        if (type == TypeReponseChatbot.ECHELLE_0_7) {
+            if (request.getReponseNumerique() == null || request.getReponseNumerique() < 0 || request.getReponseNumerique() > 7) {
+                throw new RuntimeException("La réponse doit être comprise entre 0 et 7");
+            }
+            interaction.setReponseNumerique(request.getReponseNumerique());
+        }
+
+        return interactionChatbotRepository.save(interaction);
+    }
+
+    private PatientProfile buildPatientProfile(AppUtilisateur patient, DossierPatient dossier) {
+        PatientProfile profile = new PatientProfile();
+        profile.setPatientId(patient.getId());
+
+        // MVP: valeurs simulées / calculées simplement
+        profile.setAge(70);
+        profile.setSexe("F");
+        profile.setDossierIncomplet(dossier.getDocuments() == null || dossier.getDocuments().isEmpty());
+        profile.setSaison(getCurrentSeason());
+
+        List<InteractionChatbot> history = interactionChatbotRepository.findByDossierPatientId(dossier.getId());
+
+        profile.setAllergiesConnues(history.stream()
+                .anyMatch(i -> i.getCategorie() == CategorieChatbot.ENVIRONNEMENT
+                        && "OUI".equalsIgnoreCase(i.getReponseTexte())));
+
+        profile.setSommeilScore(history.stream()
+                .filter(i -> i.getQuestionId() != null && i.getQuestionId() == 13)
+                .map(InteractionChatbot::getReponseNumerique)
+                .findFirst()
+                .orElse(null));
+
+        profile.setStressScore(history.stream()
+                .filter(i -> i.getQuestionId() != null && i.getQuestionId() == 43)
+                .map(InteractionChatbot::getReponseNumerique)
+                .findFirst()
+                .orElse(null));
+
+        return profile;
+    }
+
+    private String getCurrentSeason() {
+        Month month = LocalDate.now().getMonth();
+
+        return switch (month) {
+            case MARCH, APRIL, MAY -> "PRINTEMPS";
+            case JUNE, JULY, AUGUST -> "ETE";
+            case SEPTEMBER, OCTOBER, NOVEMBER -> "AUTOMNE";
+            default -> "HIVER";
+        };
+    }
+}

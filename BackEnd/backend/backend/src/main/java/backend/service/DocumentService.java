@@ -3,6 +3,7 @@ package backend.service;
 import backend.dto.DocumentUploadRequest;
 import backend.entity.Document;
 import backend.entity.DossierPatient;
+import backend.entity.StatutDocument;
 import backend.dao.DocumentRepository;
 import backend.dao.DossierPatientRepository;
 import org.springframework.stereotype.Service;
@@ -16,13 +17,16 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DossierPatientRepository dossierPatientRepository;
     private final FileStorageService fileStorageService;
+    private final DossierPatientService dossierPatientService;
 
     public DocumentService(DocumentRepository documentRepository,
                            DossierPatientRepository dossierPatientRepository,
-                           FileStorageService fileStorageService) {
+                           FileStorageService fileStorageService,
+                           DossierPatientService dossierPatientService) {
         this.documentRepository = documentRepository;
         this.dossierPatientRepository = dossierPatientRepository;
         this.fileStorageService = fileStorageService;
+        this.dossierPatientService = dossierPatientService;
     }
 
     public Document uploadDocument(Long dossierId,
@@ -32,8 +36,16 @@ public class DocumentService {
         DossierPatient dossier = dossierPatientRepository.findById(dossierId)
                 .orElseThrow(() -> new RuntimeException("Dossier introuvable"));
 
-        if (request.getType() == null || request.getDateDocument() == null) {
-            throw new RuntimeException("Le type et la date du document sont obligatoires");
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("Le fichier est obligatoire");
+        }
+
+        if (request.getType() == null) {
+            throw new RuntimeException("Le type du document est obligatoire");
+        }
+
+        if (request.getDateDocument() == null) {
+            throw new RuntimeException("La date du document est obligatoire");
         }
 
         String storedFilename = fileStorageService.storeFile(file);
@@ -45,9 +57,13 @@ public class DocumentService {
         document.setCheminFichier("uploads/" + storedFilename);
         document.setPrescripteur(request.getPrescripteur());
         document.setCommentairePatient(request.getCommentairePatient());
+        document.setStatut(StatutDocument.EN_ATTENTE);
         document.setDossierPatient(dossier);
 
-        return documentRepository.save(document);
+        Document saved = documentRepository.save(document);
+        dossierPatientService.mettreAJourStatutDossier(dossierId);
+
+        return saved;
     }
 
     public List<Document> getDocumentsByDossier(Long dossierId) {

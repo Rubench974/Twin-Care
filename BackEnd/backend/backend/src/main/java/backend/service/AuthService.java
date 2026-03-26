@@ -12,21 +12,33 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
 
-    private final AppUtilisateurRepository appUtilisateurRepository;
+    private final AppUtilisateurRepository AppUtilisateurRepository;
     private final DossierPatientRepository dossierPatientRepository;
 
-    public AuthService(AppUtilisateurRepository appUtilisateurRepository,
+    public AuthService(AppUtilisateurRepository AppUtilisateurRepository,
                        DossierPatientRepository dossierPatientRepository) {
-        this.appUtilisateurRepository = appUtilisateurRepository;
+        this.AppUtilisateurRepository = AppUtilisateurRepository;
         this.dossierPatientRepository = dossierPatientRepository;
     }
 
     public AppUtilisateur register(RegisterRequest request) {
-        if (appUtilisateurRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new RuntimeException("Email obligatoire");
+        }
+
+        if (request.getMotDePasse() == null || request.getMotDePasse().isBlank()) {
+            throw new RuntimeException("Mot de passe obligatoire");
+        }
+
+        if (request.getRole() == null) {
+            throw new RuntimeException("Rôle obligatoire");
+        }
+
+        if (AppUtilisateurRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email déjà utilisé");
         }
 
-        AppUtilisateur Utilisateur = new AppUtilisateur(
+        AppUtilisateur user = new AppUtilisateur(
                 request.getNom(),
                 request.getPrenom(),
                 request.getEmail(),
@@ -34,25 +46,25 @@ public class AuthService {
                 request.getRole()
         );
 
-        AppUtilisateur savedUtilisateur = appUtilisateurRepository.save(Utilisateur);
+        AppUtilisateur savedUser = AppUtilisateurRepository.save(user);
 
-        if (savedUtilisateur.getRole() == Role.PATIENT) {
+        if (savedUser.getRole() == Role.PATIENT) {
             DossierPatient dossier = new DossierPatient();
-            dossier.setPatient(savedUtilisateur);
+            dossier.setPatient(savedUser);
             dossierPatientRepository.save(dossier);
         }
 
-        return savedUtilisateur;
+        return savedUser;
     }
 
     public AppUtilisateur login(LoginRequest request) {
-        AppUtilisateur Utilisateur = appUtilisateurRepository.findByEmail(request.getEmail())
+        AppUtilisateur user = AppUtilisateurRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-        if (!Utilisateur.getMotDePasse().equals(request.getMotDePasse())) {
+        if (!user.getMotDePasse().equals(request.getMotDePasse())) {
             throw new RuntimeException("Mot de passe incorrect");
         }
 
-        return Utilisateur;
+        return user;
     }
 }
