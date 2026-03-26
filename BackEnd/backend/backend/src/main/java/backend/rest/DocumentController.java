@@ -1,10 +1,13 @@
 package backend.rest;
 
-import backend.dto.CreateDocumentRequest;
 import backend.entity.Document;
+import backend.entity.TypeDocument;
 import backend.service.DocumentService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -18,10 +21,22 @@ public class DocumentController {
         this.documentService = documentService;
     }
 
-    @PostMapping("/dossier/{dossierId}")
-    public Document createDocument(@PathVariable Long dossierId,
-                                   @RequestBody CreateDocumentRequest request) {
-        return documentService.createDocument(dossierId, request);
+    @PostMapping(value = "/upload/dossier/{dossierId}", consumes = {"multipart/form-data"})
+    public Document uploadDocument(@PathVariable Long dossierId,
+                                   @RequestParam("file") MultipartFile file,
+                                   @RequestParam("type") TypeDocument type,
+                                   @RequestParam("dateDocument")
+                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateDocument,
+                                   @RequestParam(value = "prescripteur", required = false) String prescripteur,
+                                   @RequestParam(value = "commentairePatient", required = false) String commentairePatient) {
+
+        backend.dto.DocumentUploadRequest request = new backend.dto.DocumentUploadRequest();
+        request.setType(type);
+        request.setDateDocument(dateDocument);
+        request.setPrescripteur(prescripteur);
+        request.setCommentairePatient(commentairePatient);
+
+        return documentService.uploadDocument(dossierId, file, request);
     }
 
     @GetMapping("/dossier/{dossierId}")
