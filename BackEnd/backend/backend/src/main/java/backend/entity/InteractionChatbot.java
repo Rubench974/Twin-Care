@@ -18,6 +18,7 @@ public class InteractionChatbot {
     @Column(nullable = false, length = 500)
     private String question;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 100)
     private CategorieChatbot categorie;
 
