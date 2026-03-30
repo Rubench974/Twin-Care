@@ -8,6 +8,7 @@ import backend.dao.DocumentRepository;
 import backend.dao.DossierPatientRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,6 +30,7 @@ public class DocumentService {
         this.dossierPatientService = dossierPatientService;
     }
 
+    @Transactional
     public Document uploadDocument(Long dossierId,
                                    MultipartFile file,
                                    DocumentUploadRequest request) {

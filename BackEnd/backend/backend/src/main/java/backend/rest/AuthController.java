@@ -1,10 +1,13 @@
 package backend.rest;
 
+import backend.dto.AuthResponse;
 import backend.dto.LoginRequest;
 import backend.dto.RegisterRequest;
 import backend.entity.AppUtilisateur;
 import backend.service.AuthService;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -23,7 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AppUtilisateur login(@RequestBody LoginRequest request) {
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
     }
 }

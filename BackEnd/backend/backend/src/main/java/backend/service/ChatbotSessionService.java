@@ -8,8 +8,10 @@ import backend.dao.AppUtilisateurRepository;
 import backend.dao.DossierPatientRepository;
 import backend.dao.InteractionChatbotRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Month;
+import java.time.Period;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -48,7 +50,7 @@ public class ChatbotSessionService {
 
         return response;
     }
-
+    @Transactional
     public InteractionChatbot enregistrerReponse(Long patientId, Long dossierId, ChatbotAnswerRequest request) {
         AppUtilisateur patient = AppUtilisateurRepository.findById(patientId)
                 .orElseThrow(() -> new RuntimeException("Patient introuvable"));
@@ -63,7 +65,7 @@ public class ChatbotSessionService {
         interaction.setQuestion(request.getQuestion());
         interaction.setCategorie(request.getCategorie());
 
-        TypeReponseChatbot type = TypeReponseChatbot.valueOf(request.getTypeReponse());
+        TypeReponseChatbot type = request.getTypeReponse();
         interaction.setTypeReponse(type);
 
         if (type == TypeReponseChatbot.OUI_NON) {
@@ -88,17 +90,28 @@ public class ChatbotSessionService {
             }
             interaction.setReponseNumerique(request.getReponseNumerique());
         }
+        if (type == TypeReponseChatbot.OUI_NON && "OUI".equalsIgnoreCase(request.getReponseTexte())) {
+            interaction.setARevoirParProfessionnel(true);
+        } else if (type == TypeReponseChatbot.ECHELLE_1_5 && request.getReponseNumerique() != null
+                && request.getReponseNumerique() >= 4) {
+            interaction.setARevoirParProfessionnel(true);
+        } else if (type == TypeReponseChatbot.ECHELLE_0_7 && request.getReponseNumerique() != null
+                && request.getReponseNumerique() >= 5) {
+            interaction.setARevoirParProfessionnel(true);
+        } else {
+            interaction.setARevoirParProfessionnel(false);
+        }
 
         return interactionChatbotRepository.save(interaction);
     }
-
+    @Transactional
     private PatientProfile buildPatientProfile(AppUtilisateur patient, DossierPatient dossier) {
         PatientProfile profile = new PatientProfile();
         profile.setPatientId(patient.getId());
 
         // MVP: valeurs simulées / calculées simplement
-        profile.setAge(70);
-        profile.setSexe("F");
+        profile.setAge(Period.between(patient.getDateNaissance(), LocalDate.now()).getYears());
+        profile.setSexe(patient.getSexe());
         profile.setDossierIncomplet(dossier.getDocuments() == null || dossier.getDocuments().isEmpty());
         profile.setSaison(getCurrentSeason());
 
@@ -123,6 +136,7 @@ public class ChatbotSessionService {
         return profile;
     }
 
+    @Transactional
     private String getCurrentSeason() {
         Month month = LocalDate.now().getMonth();
 

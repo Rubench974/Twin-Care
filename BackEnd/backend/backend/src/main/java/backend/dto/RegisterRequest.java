@@ -1,6 +1,8 @@
 package backend.dto;
 
 import backend.entity.Role;
+import backend.entity.Sexe;
+import java.time.LocalDate;
 
 public class RegisterRequest {
     private String nom;
@@ -8,6 +10,11 @@ public class RegisterRequest {
     private String email;
     private String motDePasse;
     private Role role;
+    private LocalDate dateNaissance;
+    private Sexe sexe;
+
+     public RegisterRequest() {
+    }
 
     public String getNom() {
         return nom;
@@ -47,5 +54,17 @@ public class RegisterRequest {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+    public LocalDate getDateNaissance() {
+        return dateNaissance;
+    }
+    public void setDateNaissance(LocalDate dateNaissance) {
+        this.dateNaissance = dateNaissance;
+    }
+    public Sexe getSexe() {
+        return sexe;
+    }   
+    public void setSexe(Sexe sexe) {
+        this.sexe = sexe;
     }
 }

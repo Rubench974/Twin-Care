@@ -33,6 +33,10 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/test", "/h2-console/**").permitAll()
+                        .requestMatchers("/api/dossiers/**").hasAnyRole("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
+                        .requestMatchers("/api/documents/**").hasAnyRole("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
+                        .requestMatchers("/api/validations/**").hasAnyRole("ASSISTANT_MEDICAL", "MEDECIN")
+                        .requestMatchers("/api/chatbot/**").hasRole("PATIENT")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userService);

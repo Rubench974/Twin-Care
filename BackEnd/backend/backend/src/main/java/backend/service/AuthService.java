@@ -6,6 +6,7 @@ import backend.dao.*;
 import backend.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -26,23 +27,28 @@ public class AuthService {
         this.encoder = encoder;
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
-    }
-
+    }    
+    
+    @Transactional
     public AppUtilisateur register(RegisterRequest req) {
         AppUtilisateur user = new AppUtilisateur(
                 req.getNom(),
                 req.getPrenom(),
+                req.getDateNaissance(),
                 req.getEmail(),
                 encoder.encode(req.getMotDePasse()),
-                req.getRole()
+                req.getRole(),
+                req.getSexe()
+
         );
 
         AppUtilisateur saved = repo.save(user);
-
+        
         if (saved.getRole() == Role.PATIENT) {
             DossierPatient d = new DossierPatient();
             d.setPatient(saved);
             dossierRepo.save(d);
+            saved.setDossierPatient(d);
         }
 
         return saved;
@@ -61,4 +67,5 @@ public class AuthService {
 
         return new AuthResponse(token, user.getEmail(), user.getRole().name());
     }
+    
 }

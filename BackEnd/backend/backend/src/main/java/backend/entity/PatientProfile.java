@@ -6,7 +6,7 @@ public class PatientProfile {
 
     private Long patientId;
     private Integer age;
-    private String sexe;
+    private Sexe sexe;
     private LocalDate dateDerniereConnexion;
     private boolean dossierIncomplet;
     private String saison;
@@ -31,11 +31,11 @@ public class PatientProfile {
         this.age = age;
     }
 
-    public String getSexe() {
+    public Sexe getSexe() {
         return sexe;
     }
 
-    public void setSexe(String sexe) {
+    public void setSexe(Sexe sexe) {
         this.sexe = sexe;
     }
 

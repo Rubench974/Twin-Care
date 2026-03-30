@@ -1,13 +1,14 @@
 package backend.dto;
 
 import backend.entity.CategorieChatbot;
+import backend.entity.TypeReponseChatbot;
 
 public class ChatbotAnswerRequest {
 
     private Integer questionId;
     private String question;
     private CategorieChatbot categorie;
-    private String typeReponse;
+    private TypeReponseChatbot typeReponse;
     private String reponseTexte;
     private Integer reponseNumerique;
 
@@ -35,11 +36,11 @@ public class ChatbotAnswerRequest {
         this.categorie = categorie;
     }
 
-    public String getTypeReponse() {
+    public TypeReponseChatbot getTypeReponse() {
         return typeReponse;
     }
 
-    public void setTypeReponse(String typeReponse) {
+    public void setTypeReponse(TypeReponseChatbot typeReponse) {
         this.typeReponse = typeReponse;
     }
 

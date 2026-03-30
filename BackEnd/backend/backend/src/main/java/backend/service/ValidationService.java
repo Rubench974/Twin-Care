@@ -6,6 +6,7 @@ import backend.dao.AppUtilisateurRepository;
 import backend.dao.DocumentRepository;
 import backend.dao.ValidationRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ValidationService {
@@ -25,6 +26,7 @@ public class ValidationService {
         this.dossierPatientService = dossierPatientService;
     }
 
+    @Transactional
     public Validation validerDocument(Long documentId, ValidationRequest request) {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new RuntimeException("Document introuvable"));
@@ -35,6 +37,10 @@ public class ValidationService {
         if (assistant.getRole() != Role.ASSISTANT_MEDICAL && assistant.getRole() != Role.MEDECIN) {
             throw new RuntimeException("Seul un assistant médical ou un médecin peut valider un document");
         }
+
+        if (document.getValidation() != null) {
+            throw new RuntimeException("Ce document a déjà été validé");
+}
 
         Validation validation = new Validation();
         validation.setDocument(document);
