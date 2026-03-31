@@ -26,15 +26,8 @@
 
       <template v-slot:append>
         <div class="pa-4">
-          <v-list-item link prepend-icon="mdi-logout" title="Deconnexion" class="mb-4"></v-list-item>
-          <v-btn
-            block
-            variant="outlined"
-            color="red"
-            rounded="lg"
-            class="text-none font-weight-bold"
-            href="tel:15"
-          >
+          <v-list-item link prepend-icon="mdi-logout" title="Deconnexion" class="mb-4" @click="seDeconnecter"></v-list-item>
+          <v-btn block variant="outlined" color="red" rounded="lg" class="text-none font-weight-bold" href="tel:15">
             Urgence 15
           </v-btn>
         </div>
@@ -45,44 +38,33 @@
       <router-view></router-view>
     </v-main>
 
-    <v-bottom-navigation v-if="!isLoginPage" v-model="activeTab" grow color="#2A93D5" height="70">
-      <v-btn value="documents" to="/documents">
-        <v-icon>mdi-file-document</v-icon>
-        <span>Documents</span>
-      </v-btn>
+    <BarreNavigation v-if="!isLoginPage" />
 
-      <v-btn value="chatbot" to="/chatbot">
-        <v-icon>mdi-chat</v-icon>
-        <span>Chatbot</span>
-      </v-btn>
-
-      <v-btn value="parcours" to="/parcours">
-        <v-icon>mdi-sign-direction</v-icon>
-        <span>Parcours</span>
-      </v-btn>
-
-      <v-btn value="environnement" to="/environnement">
-        <v-icon>mdi-leaf</v-icon>
-        <span>Environnement</span>
-      </v-btn>
-    </v-bottom-navigation>
   </v-app>
 </template>
 
 <script setup>
 import { ref, computed, provide } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+// On importe ton super composant !
+import BarreNavigation from './components/BarreNavigation.vue'
 
 const drawer = ref(false)
-const activeTab = ref('documents')
 const route = useRoute()
+const router = useRouter()
 
-const isLoginPage = computed(() => route.path === '/')
+// On cache la barre sur la connexion et la page mot de passe oublié
+const isLoginPage = computed(() => route.path === '/' || route.path === '/mot-de-passe-oublie')
 
 const toggleDrawer = () => {
   drawer.value = !drawer.value
 }
 provide('toggleDrawer', toggleDrawer)
+
+const seDeconnecter = () => {
+  drawer.value = false
+  router.push('/')
+}
 </script>
 
 <style>
