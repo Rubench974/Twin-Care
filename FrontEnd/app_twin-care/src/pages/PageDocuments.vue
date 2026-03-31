@@ -32,16 +32,38 @@
         size="large"
         class="text-none font-weight-bold bg-white"
         style="border-width: 1.5px; height: 50px;"
+        @click="showSnackbar = true"
       >
         <v-icon start size="22">mdi-upload-outline</v-icon>
         Importer un document
       </v-btn>
     </div>
 
+    <v-snackbar
+      v-model="showSnackbar"
+      color="#2c3e50"
+      elevation="6"
+      rounded="pill"
+      timeout="3000"
+      location="bottom"
+      class="mb-16"
+    >
+      <div class="d-flex align-center w-100 px-1">
+        <v-icon color="#4CAF50" class="mr-3" size="24">mdi-check-circle</v-icon>
+        <span class="text-body-2 text-white font-weight-medium">Document ajouté avec succès</span>
+        <v-spacer></v-spacer>
+        <v-btn variant="tonal" color="white" size="small" class="text-none font-weight-bold rounded-pill ml-3" @click="showSnackbar = false">
+          Fermer
+        </v-btn>
+      </div>
+    </v-snackbar>
+
   </v-container>
 </template>
 
 <script setup>
-import { inject } from 'vue'
+import { ref, inject } from 'vue'
+
 const toggleDrawer = inject('toggleDrawer')
+const showSnackbar = ref(false)
 </script>
