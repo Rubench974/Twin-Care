@@ -8,9 +8,7 @@ C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\back
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\dto\AuthResponse.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\dto\ChatbotAnswerRequest.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\dto\ChatbotQuestionDto.java
-C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\dto\ChatbotRequest.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\dto\ChatbotSessionResponse.java
-C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\dto\CreateDocumentRequest.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\dto\DocumentUploadRequest.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\dto\LoginRequest.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\dto\RegisterRequest.java
@@ -25,11 +23,14 @@ C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\back
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\entity\QuestionDefinition.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\entity\ReponseFermeeType.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\entity\Role.java
+C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\entity\Sexe.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\entity\StatutDocument.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\entity\StatutDossier.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\entity\TypeDocument.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\entity\TypeReponseChatbot.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\entity\Validation.java
+C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\exception\GlobalExceptionHandler.java
+C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\exception\ResourceNotFoundException.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\rest\AuthController.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\rest\ChatbotController.java
 C:\Users\Moi\Desktop\FIE3\Projet Tutoré\TwinCare\Twin-Care\BackEnd\backend\backend\src\main\java\backend\rest\DocumentController.java
