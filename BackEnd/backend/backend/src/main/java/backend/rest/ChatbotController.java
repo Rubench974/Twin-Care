@@ -1,32 +1,32 @@
 package backend.rest;
 
-import backend.dto.ChatbotRequest;
+import backend.dto.ChatbotAnswerRequest;
+import backend.dto.ChatbotSessionResponse;
 import backend.entity.InteractionChatbot;
-import backend.service.ChatbotService;
-import org.springframework.web.bind.annotation.*;
+import backend.service.ChatbotSessionService;
+import jakarta.validation.Valid;
 
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/chatbot")
-@CrossOrigin("*")
 public class ChatbotController {
 
-    private final ChatbotService chatbotService;
+    private final ChatbotSessionService chatbotSessionService;
 
-    public ChatbotController(ChatbotService chatbotService) {
-        this.chatbotService = chatbotService;
+    public ChatbotController(ChatbotSessionService chatbotSessionService) {
+        this.chatbotSessionService = chatbotSessionService;
     }
 
-    @PostMapping("/patient/{patientId}/dossier/{dossierId}")
-    public InteractionChatbot saveInteraction(@PathVariable Long patientId,
-                                              @PathVariable Long dossierId,
-                                              @RequestBody ChatbotRequest request) {
-        return chatbotService.saveInteraction(patientId, dossierId, request);
+    @GetMapping("/session/patient/{patientId}")
+    public ChatbotSessionResponse demarrerSession(@PathVariable Long patientId) {
+        return chatbotSessionService.demarrerSession(patientId);
     }
 
-    @GetMapping("/dossier/{dossierId}")
-    public List<InteractionChatbot> getByDossier(@PathVariable Long dossierId) {
-        return chatbotService.getByDossier(dossierId);
+    @PostMapping("/session/patient/{patientId}/dossier/{dossierId}/answer")
+    public InteractionChatbot enregistrerReponse(@PathVariable Long patientId,
+                                                 @PathVariable Long dossierId,
+                                                 @Valid @RequestBody ChatbotAnswerRequest request) {
+        return chatbotSessionService.enregistrerReponse(patientId, dossierId, request);
     }
 }

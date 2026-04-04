@@ -1,6 +1,8 @@
 package backend.entity;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +20,9 @@ public class AppUtilisateur {
     @Column(nullable = false, length = 100)
     private String prenom;
 
+    @Column(nullable = false, length = 30)
+    private LocalDate dateNaissance;
+
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
@@ -27,6 +32,10 @@ public class AppUtilisateur {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private Sexe sexe;
 
     @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL)
     private DossierPatient dossierPatient;
@@ -40,12 +49,14 @@ public class AppUtilisateur {
     public AppUtilisateur() {
     }
 
-    public AppUtilisateur(String nom, String prenom, String email, String motDePasse, Role role) {
+    public AppUtilisateur(String nom, String prenom, LocalDate dateNaissance, String email, String motDePasse, Role role, Sexe sexe) {
         this.nom = nom;
         this.prenom = prenom;
+        this.dateNaissance = dateNaissance;
         this.email = email;
         this.motDePasse = motDePasse;
         this.role = role;
+        this.sexe = sexe;
     }
 
     public Long getId() {
@@ -67,8 +78,13 @@ public class AppUtilisateur {
     public void setPrenom(String prenom) {
         this.prenom = prenom;
     }
-
-    public String getEmail() {
+    public LocalDate getDateNaissance() {
+        return dateNaissance;
+    }
+    public void setDateNaissance(LocalDate dateNaissance) {
+        this.dateNaissance = dateNaissance;
+    }
+   public String getEmail() {
         return email;
     }
 
@@ -90,6 +106,12 @@ public class AppUtilisateur {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+    public Sexe getSexe() {
+        return sexe;
+    }
+    public void setSexe(Sexe sexe) {
+        this.sexe = sexe;
     }
 
     public DossierPatient getDossierPatient() {

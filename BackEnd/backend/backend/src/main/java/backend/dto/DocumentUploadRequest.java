@@ -1,11 +1,15 @@
 package backend.dto;
 
 import backend.entity.TypeDocument;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDate;
 
 public class DocumentUploadRequest {
 
+    @NotNull
     private TypeDocument type;
+    @NotNull
     private LocalDate dateDocument;
     private String prescripteur;
     private String commentairePatient;

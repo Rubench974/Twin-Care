@@ -3,11 +3,12 @@ package backend.rest;
 import backend.dto.ValidationRequest;
 import backend.entity.Validation;
 import backend.service.ValidationService;
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/validations")
-@CrossOrigin("*")
 public class ValidationController {
 
     private final ValidationService validationService;
@@ -18,7 +19,7 @@ public class ValidationController {
 
     @PostMapping("/document/{documentId}")
     public Validation validerDocument(@PathVariable Long documentId,
-                                      @RequestBody ValidationRequest request) {
+                                      @Valid @RequestBody ValidationRequest request) {
         return validationService.validerDocument(documentId, request);
     }
 }

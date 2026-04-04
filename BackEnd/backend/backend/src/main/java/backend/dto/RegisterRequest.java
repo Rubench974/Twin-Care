@@ -1,13 +1,29 @@
 package backend.dto;
 
 import backend.entity.Role;
+import backend.entity.Sexe;
+import java.time.LocalDate;
+
+import jakarta.validation.constraints.*;
 
 public class RegisterRequest {
+    @NotBlank
     private String nom;
+    @NotBlank
     private String prenom;
+    @NotNull
+    private LocalDate dateNaissance;
+    @NotBlank @Email
     private String email;
+    @NotBlank
     private String motDePasse;
+    @NotNull
     private Role role;
+    @NotNull
+    private Sexe sexe;
+
+     public RegisterRequest() {
+    }
 
     public String getNom() {
         return nom;
@@ -47,5 +63,17 @@ public class RegisterRequest {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+    public LocalDate getDateNaissance() {
+        return dateNaissance;
+    }
+    public void setDateNaissance(LocalDate dateNaissance) {
+        this.dateNaissance = dateNaissance;
+    }
+    public Sexe getSexe() {
+        return sexe;
+    }   
+    public void setSexe(Sexe sexe) {
+        this.sexe = sexe;
     }
 }

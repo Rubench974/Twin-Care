@@ -1,58 +1,88 @@
 package backend.service;
 
-import backend.dto.LoginRequest;
-import backend.dto.RegisterRequest;
-import backend.entity.AppUtilisateur;
-import backend.entity.DossierPatient;
-import backend.entity.Role;
-import backend.dao.AppUtilisateurRepository;
-import backend.dao.DossierPatientRepository;
+import backend.dto.*;
+import backend.entity.*;
+import backend.dao.*;
+import backend.exception.BadRequestException;
+import backend.exception.ResourceNotFoundException;
+import backend.security.JwtService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class AuthService {
 
-    private final AppUtilisateurRepository appUtilisateurRepository;
-    private final DossierPatientRepository dossierPatientRepository;
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    public AuthService(AppUtilisateurRepository appUtilisateurRepository,
-                       DossierPatientRepository dossierPatientRepository) {
-        this.appUtilisateurRepository = appUtilisateurRepository;
-        this.dossierPatientRepository = dossierPatientRepository;
+    private final AppUtilisateurRepository repo;
+    private final DossierPatientRepository dossierRepo;
+    private final PasswordEncoder encoder;
+    private final JwtService jwtService;
+    private final CustomUserDetailsService userDetailsService;
+
+    public AuthService(AppUtilisateurRepository repo,
+                       DossierPatientRepository dossierRepo,
+                       PasswordEncoder encoder,
+                       JwtService jwtService,
+                       CustomUserDetailsService userDetailsService) {
+        this.repo = repo;
+        this.dossierRepo = dossierRepo;
+        this.encoder = encoder;
+        this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
     }
 
-    public AppUtilisateur register(RegisterRequest request) {
-        if (appUtilisateurRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email déjà utilisé");
-        }
+    @Transactional
+    public AuthResponse register(RegisterRequest req) {
+        if (req.getEmail() == null || req.getEmail().isBlank())
+            throw new BadRequestException("Email obligatoire");
+        if (req.getMotDePasse() == null || req.getMotDePasse().isBlank())
+            throw new BadRequestException("Mot de passe obligatoire");
+        if (req.getRole() == null)
+            throw new BadRequestException("Rôle obligatoire");
+        if (repo.findByEmail(req.getEmail()).isPresent())
+            throw new BadRequestException("Email déjà utilisé");
 
-        AppUtilisateur Utilisateur = new AppUtilisateur(
-                request.getNom(),
-                request.getPrenom(),
-                request.getEmail(),
-                request.getMotDePasse(),
-                request.getRole()
+        AppUtilisateur user = new AppUtilisateur(
+                req.getNom(),
+                req.getPrenom(),
+                req.getDateNaissance(),
+                req.getEmail(),
+                encoder.encode(req.getMotDePasse()),
+                req.getRole(),
+                req.getSexe()
         );
 
-        AppUtilisateur savedUtilisateur = appUtilisateurRepository.save(Utilisateur);
+        AppUtilisateur saved = repo.save(user);
+        log.info("Inscription utilisateur : {}", saved.getEmail());
 
-        if (savedUtilisateur.getRole() == Role.PATIENT) {
-            DossierPatient dossier = new DossierPatient();
-            dossier.setPatient(savedUtilisateur);
-            dossierPatientRepository.save(dossier);
+        if (saved.getRole() == Role.PATIENT) {
+            DossierPatient d = new DossierPatient();
+            d.setPatient(saved);
+            dossierRepo.save(d);
+            saved.setDossierPatient(d);
         }
 
-        return savedUtilisateur;
+        var userDetails = userDetailsService.loadUserByUsername(saved.getEmail());
+        String token = jwtService.generateToken(userDetails);
+
+        return new AuthResponse(token, saved.getEmail(), saved.getRole().name());
     }
 
-    public AppUtilisateur login(LoginRequest request) {
-        AppUtilisateur Utilisateur = appUtilisateurRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+    public AuthResponse login(LoginRequest req) {
+        AppUtilisateur user = repo.findByEmail(req.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
 
-        if (!Utilisateur.getMotDePasse().equals(request.getMotDePasse())) {
-            throw new RuntimeException("Mot de passe incorrect");
-        }
+        if (!encoder.matches(req.getMotDePasse(), user.getMotDePasse()))
+            throw new BadRequestException("Mot de passe incorrect");
 
-        return Utilisateur;
+        var userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        String token = jwtService.generateToken(userDetails);
+
+        log.info("Connexion utilisateur : {}", user.getEmail());
+        return new AuthResponse(token, user.getEmail(), user.getRole().name());
     }
 }

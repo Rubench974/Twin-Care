@@ -11,17 +11,29 @@ public class InteractionChatbot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private LocalDateTime dateInteraction;
+
+    private Integer questionId;
 
     @Column(nullable = false, length = 500)
     private String question;
 
-    @Column(length = 2000)
-    private String reponse;
-
+    @Enumerated(EnumType.STRING)
     @Column(length = 100)
-    private String categorie;
+    private CategorieChatbot categorie;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private TypeReponseChatbot typeReponse;
+
+    @Column(length = 255)
+    private String reponseTexte;
+
+    private Integer reponseNumerique;
+
+    private boolean declaratifPatient;
+
+    private boolean aRevoirParProfessionnel;
 
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
@@ -33,57 +45,32 @@ public class InteractionChatbot {
 
     public InteractionChatbot() {
         this.dateInteraction = LocalDateTime.now();
+        this.declaratifPatient = true;
+        this.aRevoirParProfessionnel = true;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public LocalDateTime getDateInteraction() { return dateInteraction; }
+    public Integer getQuestionId() { return questionId; }
+    public String getQuestion() { return question; }
+    public CategorieChatbot getCategorie() { return categorie; }
+    public TypeReponseChatbot getTypeReponse() { return typeReponse; }
+    public String getReponseTexte() { return reponseTexte; }
+    public Integer getReponseNumerique() { return reponseNumerique; }
+    public boolean isDeclaratifPatient() { return declaratifPatient; }
+    public boolean isARevoirParProfessionnel() { return aRevoirParProfessionnel; }
+    public AppUtilisateur getPatient() { return patient; }
+    public DossierPatient getDossierPatient() { return dossierPatient; }
 
-    public LocalDateTime getDateInteraction() {
-        return dateInteraction;
-    }
-
-    public void setDateInteraction(LocalDateTime dateInteraction) {
-        this.dateInteraction = dateInteraction;
-    }
-
-    public String getQuestion() {
-        return question;
-    }
-
-    public void setQuestion(String question) {
-        this.question = question;
-    }
-
-    public String getReponse() {
-        return reponse;
-    }
-
-    public void setReponse(String reponse) {
-        this.reponse = reponse;
-    }
-
-    public String getCategorie() {
-        return categorie;
-    }
-
-    public void setCategorie(String categorie) {
-        this.categorie = categorie;
-    }
-
-    public AppUtilisateur getPatient() {
-        return patient;
-    }
-
-    public void setPatient(AppUtilisateur patient) {
-        this.patient = patient;
-    }
-
-    public DossierPatient getDossierPatient() {
-        return dossierPatient;
-    }
-
-    public void setDossierPatient(DossierPatient dossierPatient) {
-        this.dossierPatient = dossierPatient;
-    }
+    public void setDateInteraction(LocalDateTime dateInteraction) { this.dateInteraction = dateInteraction; }
+    public void setQuestionId(Integer questionId) { this.questionId = questionId; }
+    public void setQuestion(String question) { this.question = question; }
+    public void setCategorie(CategorieChatbot categorie) { this.categorie = categorie; }
+    public void setTypeReponse(TypeReponseChatbot typeReponse) { this.typeReponse = typeReponse; }
+    public void setReponseTexte(String reponseTexte) { this.reponseTexte = reponseTexte; }
+    public void setReponseNumerique(Integer reponseNumerique) { this.reponseNumerique = reponseNumerique; }
+    public void setDeclaratifPatient(boolean declaratifPatient) { this.declaratifPatient = declaratifPatient; }
+    public void setARevoirParProfessionnel(boolean aRevoirParProfessionnel) { this.aRevoirParProfessionnel = aRevoirParProfessionnel; }
+    public void setPatient(AppUtilisateur patient) { this.patient = patient; }
+    public void setDossierPatient(DossierPatient dossierPatient) { this.dossierPatient = dossierPatient; }
 }
