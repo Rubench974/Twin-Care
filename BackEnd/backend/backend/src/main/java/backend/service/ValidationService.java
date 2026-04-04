@@ -2,14 +2,21 @@ package backend.service;
 
 import backend.dto.ValidationRequest;
 import backend.entity.*;
+import backend.exception.ResourceNotFoundException;
+import backend.exception.UnauthorizedActionException;
 import backend.dao.AppUtilisateurRepository;
 import backend.dao.DocumentRepository;
 import backend.dao.ValidationRepository;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ValidationService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final ValidationRepository validationRepository;
     private final DocumentRepository documentRepository;
@@ -29,13 +36,13 @@ public class ValidationService {
     @Transactional
     public Validation validerDocument(Long documentId, ValidationRequest request) {
         Document document = documentRepository.findById(documentId)
-                .orElseThrow(() -> new RuntimeException("Document introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Document introuvable"));
 
         AppUtilisateur assistant = AppUtilisateurRepository.findById(request.getAssistantMedicalId())
-                .orElseThrow(() -> new RuntimeException("Assistant médical introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Assistant médical introuvable"));
 
         if (assistant.getRole() != Role.ASSISTANT_MEDICAL && assistant.getRole() != Role.MEDECIN) {
-            throw new RuntimeException("Seul un assistant médical ou un médecin peut valider un document");
+            throw new UnauthorizedActionException("Seul un assistant médical ou un médecin peut valider un document");
         }
 
         if (document.getValidation() != null) {
@@ -58,6 +65,7 @@ public class ValidationService {
 
         documentRepository.save(document);
         Validation savedValidation = validationRepository.save(validation);
+        log.info("Document {} {} par {}", documentId, request.getDecision(), assistant.getEmail());
 
         Long dossierId = document.getDossierPatient().getId();
         dossierPatientService.mettreAJourStatutDossier(dossierId);

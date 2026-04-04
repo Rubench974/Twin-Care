@@ -1,6 +1,7 @@
 package backend.service;
 
 import backend.entity.AppUtilisateur;
+import backend.exception.ResourceNotFoundException;
 import backend.dao.AppUtilisateurRepository;
 import backend.security.UtilisateurSecurite;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) {
         AppUtilisateur user = repository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
 
         return new UtilisateurSecurite(
                 user.getEmail(),

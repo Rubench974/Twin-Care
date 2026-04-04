@@ -4,11 +4,12 @@ import backend.dto.ChatbotAnswerRequest;
 import backend.dto.ChatbotSessionResponse;
 import backend.entity.InteractionChatbot;
 import backend.service.ChatbotSessionService;
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/chatbot")
-@CrossOrigin("*")
 public class ChatbotController {
 
     private final ChatbotSessionService chatbotSessionService;
@@ -25,7 +26,7 @@ public class ChatbotController {
     @PostMapping("/session/patient/{patientId}/dossier/{dossierId}/answer")
     public InteractionChatbot enregistrerReponse(@PathVariable Long patientId,
                                                  @PathVariable Long dossierId,
-                                                 @RequestBody ChatbotAnswerRequest request) {
+                                                 @Valid @RequestBody ChatbotAnswerRequest request) {
         return chatbotSessionService.enregistrerReponse(patientId, dossierId, request);
     }
 }

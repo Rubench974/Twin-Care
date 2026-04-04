@@ -4,6 +4,7 @@ import backend.entity.Document;
 import backend.entity.DossierPatient;
 import backend.entity.StatutDocument;
 import backend.entity.StatutDossier;
+import backend.exception.ResourceNotFoundException;
 import backend.dao.DocumentRepository;
 import backend.dao.DossierPatientRepository;
 import org.springframework.stereotype.Service;
@@ -24,12 +25,12 @@ public class DossierPatientService {
 
     public DossierPatient getByPatientId(Long patientId) {
         return dossierPatientRepository.findByPatientId(patientId)
-                .orElseThrow(() -> new RuntimeException("Dossier patient introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Dossier patient introuvable"));
     }
 
     public DossierPatient getById(Long dossierId) {
         return dossierPatientRepository.findById(dossierId)
-                .orElseThrow(() -> new RuntimeException("Dossier introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Dossier introuvable"));
     }
 
     public void mettreAJourStatutDossier(Long dossierId) {

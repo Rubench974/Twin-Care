@@ -3,7 +3,6 @@ package backend.rest;
 import backend.dto.AuthResponse;
 import backend.dto.LoginRequest;
 import backend.dto.RegisterRequest;
-import backend.entity.AppUtilisateur;
 import backend.service.AuthService;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -11,7 +10,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin("*")
 public class AuthController {
 
     private final AuthService authService;
@@ -21,9 +19,10 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public AppUtilisateur register(@RequestBody RegisterRequest request) {
+    public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
     }
+    
 
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {

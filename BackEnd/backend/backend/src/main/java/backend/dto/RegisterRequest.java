@@ -4,13 +4,22 @@ import backend.entity.Role;
 import backend.entity.Sexe;
 import java.time.LocalDate;
 
+import jakarta.validation.constraints.*;
+
 public class RegisterRequest {
+    @NotBlank
     private String nom;
+    @NotBlank
     private String prenom;
-    private String email;
-    private String motDePasse;
-    private Role role;
+    @NotNull
     private LocalDate dateNaissance;
+    @NotBlank @Email
+    private String email;
+    @NotBlank
+    private String motDePasse;
+    @NotNull
+    private Role role;
+    @NotNull
     private Sexe sexe;
 
      public RegisterRequest() {
