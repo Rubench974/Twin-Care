@@ -20,16 +20,16 @@ public class ValidationService {
 
     private final ValidationRepository validationRepository;
     private final DocumentRepository documentRepository;
-    private final AppUtilisateurRepository AppUtilisateurRepository;
+    private final AppUtilisateurRepository appUtilisateurRepository;
     private final DossierPatientService dossierPatientService;
 
     public ValidationService(ValidationRepository validationRepository,
                              DocumentRepository documentRepository,
-                             AppUtilisateurRepository AppUtilisateurRepository,
+                             AppUtilisateurRepository appUtilisateurRepository,
                              DossierPatientService dossierPatientService) {
         this.validationRepository = validationRepository;
         this.documentRepository = documentRepository;
-        this.AppUtilisateurRepository = AppUtilisateurRepository;
+        this.appUtilisateurRepository = appUtilisateurRepository;
         this.dossierPatientService = dossierPatientService;
     }
 
@@ -38,7 +38,7 @@ public class ValidationService {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Document introuvable"));
 
-        AppUtilisateur assistant = AppUtilisateurRepository.findById(request.getAssistantMedicalId())
+        AppUtilisateur assistant = appUtilisateurRepository.findById(request.getAssistantMedicalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Assistant médical introuvable"));
 
         if (assistant.getRole() != Role.ASSISTANT_MEDICAL && assistant.getRole() != Role.MEDECIN) {
