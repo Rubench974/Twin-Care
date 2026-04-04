@@ -33,7 +33,6 @@ backend\entity\AppUtilisateur.class
 backend\exception\ResourceNotFoundException.class
 backend\service\DossierPatientService.class
 backend\dto\ChatbotSessionResponse.class
-backend\rest\TESTController.class
 backend\exception\GlobalExceptionHandler.class
 backend\entity\PatientProfile.class
 backend\dto\ValidationRequest.class
