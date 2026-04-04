@@ -26,7 +26,7 @@ import java.util.Map;
 @Service
 public class ChatbotSessionService {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    private static final Logger log = LoggerFactory.getLogger(ChatbotSessionService.class);
 
     private final AppUtilisateurRepository appUtilisateurRepository;
     private final DossierPatientRepository dossierPatientRepository;

@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import backend.exception.BadRequestException;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.List;
@@ -23,11 +25,11 @@ public class FileStorageService {
 
     public String storeFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new RuntimeException("Aucun fichier reçu");
+            throw new BadRequestException("Aucun fichier reçu");
         }
 
         if (!ALLOWED_TYPES.contains(file.getContentType())) {
-            throw new RuntimeException("Type de fichier non autorisé");
+            throw new BadRequestException("Type de fichier non autorisé");
         }
 
         try {
@@ -43,7 +45,7 @@ public class FileStorageService {
 
             return uniqueFilename;
         } catch (IOException e) {
-            throw new RuntimeException("Erreur lors de l'enregistrement du fichier", e);
+            throw new RuntimeException("Erreur lors de l'enregistrement du fichier: ", e);
         }
     }
 

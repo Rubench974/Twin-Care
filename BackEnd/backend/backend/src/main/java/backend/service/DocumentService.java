@@ -20,7 +20,7 @@ import java.util.List;
 @Service
 public class DocumentService {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
 
     private final DocumentRepository documentRepository;
     private final DossierPatientRepository dossierPatientRepository;

@@ -2,6 +2,7 @@ package backend.service;
 
 import backend.dto.ValidationRequest;
 import backend.entity.*;
+import backend.exception.BadRequestException;
 import backend.exception.ResourceNotFoundException;
 import backend.exception.UnauthorizedActionException;
 import backend.dao.AppUtilisateurRepository;
@@ -16,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ValidationService {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    private static final Logger log = LoggerFactory.getLogger(ValidationService.class);
 
     private final ValidationRepository validationRepository;
     private final DocumentRepository documentRepository;
@@ -46,7 +47,7 @@ public class ValidationService {
         }
 
         if (document.getValidation() != null) {
-            throw new RuntimeException("Ce document a déjà été validé");
+            throw new BadRequestException("Ce document a déjà été validé");
 }
 
         Validation validation = new Validation();
@@ -60,7 +61,7 @@ public class ValidationService {
         } else if (request.getDecision() == DecisionValidation.REFUSER) {
             document.setStatut(StatutDocument.REFUSE);
         } else {
-            throw new RuntimeException("Décision de validation invalide");
+            throw new BadRequestException("Décision de validation invalide");
         }
 
         documentRepository.save(document);
