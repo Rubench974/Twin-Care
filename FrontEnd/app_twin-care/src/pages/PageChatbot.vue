@@ -14,18 +14,18 @@
 
     <div class="px-6 text-center mb-10" style="max-width: 350px;">
       <h2 class="text-h6 font-weight-bold" style="color: #2c3e50; line-height: 1.4; font-size: 1.15rem !important;">
-        Avez vous des antécédents médicaux (vous ou votre famille) liés aux problèmes cardiaques ?
+        {{ questionActuelle }}
       </h2>
     </div>
 
     <v-row class="w-100 px-6" style="max-width: 380px;" justify="center">
       <v-col cols="6" class="pr-2">
-        <v-btn variant="outlined" block rounded="xl" size="large" color="#2c3e50" class="font-weight-bold bg-white text-none" style="border-width: 1.5px; height: 50px;">
+        <v-btn @click="envoyerReponse('Oui')" variant="outlined" block rounded="xl" size="large" color="#2c3e50" class="font-weight-bold bg-white text-none" style="border-width: 1.5px; height: 50px;">
           Oui
         </v-btn>
       </v-col>
       <v-col cols="6" class="pl-2">
-        <v-btn variant="outlined" block rounded="xl" size="large" color="#2c3e50" class="font-weight-bold bg-white text-none" style="border-width: 1.5px; height: 50px;">
+        <v-btn @click="envoyerReponse('Non')" variant="outlined" block rounded="xl" size="large" color="#2c3e50" class="font-weight-bold bg-white text-none" style="border-width: 1.5px; height: 50px;">
           Non
         </v-btn>
       </v-col>
@@ -35,8 +35,48 @@
 </template>
 
 <script setup>
-import { inject } from 'vue'
+import { ref, inject, onMounted } from 'vue'
+
 const toggleDrawer = inject('toggleDrawer')
+const questionActuelle = ref("Chargement de la question...")
+const url = "https://twincare-t2xu.onrender.com/api/chatbot"
+
+function getQuestion() {
+  const token = localStorage.getItem('user-token')
+  const myHeaders = new Headers()
+  myHeaders.append("Authorization", "Bearer " + token)
+
+  fetch(url, { method: "GET", headers: myHeaders })
+    .then(response => response.json())
+    .then(data => {
+      if (data.question) questionActuelle.value = data.question
+      else questionActuelle.value = "Avez vous des antécédents médicaux liés aux problèmes cardiaques ?"
+    })
+    .catch(err => console.log(err))
+}
+
+function envoyerReponse(choix) {
+  const token = localStorage.getItem('user-token')
+  const myHeaders = new Headers()
+  myHeaders.append("Content-Type", "application/json")
+  myHeaders.append("Authorization", "Bearer " + token)
+
+  const fetchOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: JSON.stringify({ reponse: choix })
+  }
+
+  fetch(url, fetchOptions)
+    .then(response => {
+      if (response.ok) console.log("Réponse enregistrée")
+    })
+    .catch(err => console.log(err))
+}
+
+onMounted(() => {
+  getQuestion()
+})
 </script>
 
 <style scoped>
@@ -79,13 +119,7 @@ const toggleDrawer = inject('toggleDrawer')
 }
 
 @keyframes pulseAnim {
-  0% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(2.2); 
-    opacity: 0; 
-  }
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
 }
 </style>

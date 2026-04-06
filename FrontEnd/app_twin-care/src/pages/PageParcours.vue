@@ -49,6 +49,40 @@
 </template>
 
 <script setup>
-import { inject } from 'vue'
+import { ref, inject, onMounted } from 'vue'
+
 const toggleDrawer = inject('toggleDrawer')
+const listeParcours = ref([])
+
+const url = "https://twincare-t2xu.onrender.com/api/parcours"
+
+function chargerParcours() {
+  const token = localStorage.getItem('user-token')
+  const myHeaders = new Headers()
+  myHeaders.append("Content-Type", "application/json")
+  myHeaders.append("Authorization", "Bearer " + token)
+
+  const fetchOptions = {
+    method: "GET",
+    headers: myHeaders
+  }
+
+  fetch(url, fetchOptions)
+    .then((response) => {
+      if (response.ok) return response.json()
+    })
+    .then((dataJSON) => {
+      if (dataJSON) {
+        listeParcours.value = dataJSON
+        console.log("Parcours chargés depuis le serveur")
+      }
+    })
+    .catch((error) => {
+      console.log("Erreur :", error)
+    })
+}
+
+onMounted(() => {
+  chargerParcours()
+})
 </script>
