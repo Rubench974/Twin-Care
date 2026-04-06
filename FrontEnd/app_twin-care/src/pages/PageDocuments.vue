@@ -32,7 +32,7 @@
         size="large"
         class="text-none font-weight-bold bg-white"
         style="border-width: 1.5px; height: 50px;"
-        @click="showSnackbar = true"
+        @click="ajouterDocument"
       >
         <v-icon start size="22">mdi-upload-outline</v-icon>
         Importer un document
@@ -66,4 +66,33 @@ import { ref, inject } from 'vue'
 
 const toggleDrawer = inject('toggleDrawer')
 const showSnackbar = ref(false)
+
+const url = "https://twincare-t2xu.onrender.com/api/documents"
+
+function ajouterDocument() {
+  const token = localStorage.getItem('user-token')
+  const myHeaders = new Headers()
+  myHeaders.append("Content-Type", "application/json")
+  myHeaders.append("Authorization", "Bearer " + token)
+
+  const fetchOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: JSON.stringify({
+      nom: "Nouveau Document",
+      type: "SCAN",
+      date: new Date().toLocaleDateString()
+    })
+  }
+
+  fetch(url, fetchOptions)
+    .then((response) => {
+      if (response.ok) {
+        showSnackbar.value = true
+      }
+    })
+    .catch((error) => {
+      console.log("Erreur :", error)
+    })
+}
 </script>
