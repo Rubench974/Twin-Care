@@ -1,0 +1,17 @@
+package backend.entity;
+
+public enum CategorieChatbot {
+    ALLERGIES,
+    TRAITEMENTS,
+    ANTECEDENTS,
+    HABITUDES_DE_VIE,
+    VACCINATIONS,
+    MOTIF_CONSULTATION,
+    ACTIVITE_PHYSIQUE,
+    SOMMEIL,
+    PREVENTION,
+    ENVIRONNEMENT,
+    SANTE_MENTALE
+
+
+}
