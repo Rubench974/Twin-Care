@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                 var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
-                corsConfiguration.setAllowedOrigins(java.util.List.of("http://localhost:3001", "https://twincare-t2xu.onrender.com"));
+                corsConfiguration.setAllowedOriginPatterns(java.util.List.of("*"));
                 corsConfiguration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 corsConfiguration.setAllowedHeaders(java.util.List.of("*"));
                 return corsConfiguration;
@@ -45,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/documents/**").hasAnyRole("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
                         .requestMatchers("/api/validations/**").hasAnyRole("ASSISTANT_MEDICAL", "MEDECIN")
                         .requestMatchers("/api/chatbot/**").hasRole("PATIENT")
+                        .requestMatchers("/api/parcours/**").hasAnyAuthority("PATIENT", "ROLE_PATIENT", "ASSISTANT_MEDICAL", "ROLE_ASSISTANT_MEDICAL", "MEDECIN", "ROLE_MEDECIN")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userService);
