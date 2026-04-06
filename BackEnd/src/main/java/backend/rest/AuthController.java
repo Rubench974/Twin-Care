@@ -7,7 +7,7 @@ import backend.service.AuthService;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
-
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
