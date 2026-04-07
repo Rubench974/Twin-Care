@@ -1,16 +1,22 @@
 package backend.service;
 
-import backend.dto.*;
-import backend.entity.*;
-import backend.dao.*;
-import backend.exception.BadRequestException;
-import backend.exception.ResourceNotFoundException;
-import backend.security.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import backend.dao.AppUtilisateurRepository;
+import backend.dao.DossierPatientRepository;
+import backend.dto.AuthResponse;
+import backend.dto.LoginRequest;
+import backend.dto.RegisterRequest;
+import backend.entity.AppUtilisateur;
+import backend.entity.DossierPatient;
+import backend.entity.Role;
+import backend.exception.BadRequestException;
+import backend.exception.ResourceNotFoundException;
+import backend.security.JwtService;
 
 @Service
 public class AuthService {
@@ -59,17 +65,19 @@ public class AuthService {
         AppUtilisateur saved = repo.save(user);
         log.info("Inscription utilisateur : {}", saved.getEmail());
 
+        Long dossierId = null;
         if (saved.getRole() == Role.PATIENT) {
             DossierPatient d = new DossierPatient();
             d.setPatient(saved);
-            dossierRepo.save(d);
-            saved.setDossierPatient(d);
+            DossierPatient savedDossier = dossierRepo.save(d);
+            saved.setDossierPatient(savedDossier);
+            dossierId = savedDossier.getId();
         }
 
         var userDetails = userDetailsService.loadUserByUsername(saved.getEmail());
         String token = jwtService.generateToken(userDetails);
 
-        return new AuthResponse(token, saved.getEmail(), saved.getRole().name());
+        return new AuthResponse(token, saved.getEmail(), saved.getRole().name(), saved.getId(), dossierId);
     }
 
     public AuthResponse login(LoginRequest req) {
@@ -82,7 +90,15 @@ public class AuthService {
         var userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String token = jwtService.generateToken(userDetails);
 
+        Long dossierId = null;
+        if (user.getRole() == Role.PATIENT) {
+             DossierPatient dossier = dossierRepo.findByPatientId(user.getId()).orElse(null);
+             if (dossier != null) {
+                 dossierId = dossier.getId();
+             }
+        }
+
         log.info("Connexion utilisateur : {}", user.getEmail());
-        return new AuthResponse(token, user.getEmail(), user.getRole().name());
+        return new AuthResponse(token, user.getEmail(), user.getRole().name(), user.getId(), dossierId);
     }
 }
