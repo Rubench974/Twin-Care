@@ -7,7 +7,6 @@
           Twin Care
         </h1>
 
-        <!-- Enveloppe le tout dans un formulaire connecté à ta fonction -->
         <v-form @submit.prevent="seConnecter">
           <div class="text-left mb-1 ml-1 font-weight-medium" style="color: #37474F; font-size: 0.85rem;">
             Adresse mail
@@ -46,12 +45,10 @@
             </router-link>
           </div>
 
-          <!-- Affichage du message d'erreur si le fetch échoue -->
           <v-alert v-if="erreurAffichee" type="error" variant="tonal" class="mb-4 text-caption rounded-lg" density="compact">
             Identifiants incorrects ou serveur injoignable.
           </v-alert>
 
-          <!-- Le bouton déclenche le 'submit' du formulaire au lieu d'un simple lien 'to=' -->
           <v-btn
             type="submit"
             :loading="chargement"
