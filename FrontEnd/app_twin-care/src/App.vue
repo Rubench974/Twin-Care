@@ -46,14 +46,12 @@
 <script setup>
 import { ref, computed, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-// On importe ton super composant !
 import BarreNavigation from './components/BarreNavigation.vue'
 
 const drawer = ref(false)
 const route = useRoute()
 const router = useRouter()
 
-// On cache la barre sur la connexion et la page mot de passe oublié
 const isLoginPage = computed(() => route.path === '/' || route.path === '/mot-de-passe-oublie')
 
 const toggleDrawer = () => {
