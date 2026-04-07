@@ -1,12 +1,15 @@
+// backend/service/ChatbotTriggerEngineService.java
 package backend.service;
 
 import backend.dto.ChatbotQuestionDto;
 import backend.entity.PatientProfile;
 import backend.entity.QuestionDefinition;
+import backend.entity.Priorite;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -19,15 +22,32 @@ public class ChatbotTriggerEngineService {
         this.catalogService = catalogService;
     }
 
-    public List<ChatbotQuestionDto> selectQuestions(PatientProfile profile, Map<Integer, LocalDateTime> lastAnswerDates) {
+      public List<ChatbotQuestionDto> selectQuestions(PatientProfile profile,
+                                                    Map<Integer, LocalDateTime> lastAnswerDates,
+                                                    int limit) {
         List<QuestionDefinition> allQuestions = catalogService.getAllQuestions();
+
+        // Tri par priorité : HAUTE (1), MOYENNE (2), FAIBLE (3)
+        allQuestions.sort(Comparator.comparingInt(q -> {
+            Priorite p = q.getPriorite();
+            if (p == null) return 4; // les questions sans priorité à la fin
+            switch (p) {
+                case HAUTE: return 1;
+                case MOYENNE: return 2;
+                case FAIBLE: return 3;
+                default: return 4;
+            }
+        }));
+
         List<ChatbotQuestionDto> selected = new ArrayList<>();
         for (QuestionDefinition q : allQuestions) {
             LocalDateTime lastDate = lastAnswerDates != null ? lastAnswerDates.get(q.getId()) : null;
             if (matchesTrigger(q, profile, lastDate)) {
                 selected.add(new ChatbotQuestionDto(q.getId(), q.getCategorie(), q.getQuestion(), q.getTypeReponse()));
             }
-            if (selected.size() >= 2) break;
+            if (selected.size() >= limit) {
+                break;
+            }
         }
         return selected;
     }

@@ -2,5 +2,6 @@ package backend.entity;
 
 public enum ReponseFermeeType {
     OUI,
-    NON
+    NON,
+    JE_NE_SAIS_PAS
 }

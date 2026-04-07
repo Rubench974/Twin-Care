@@ -11,7 +11,10 @@ public enum CategorieChatbot {
     SOMMEIL,
     PREVENTION,
     ENVIRONNEMENT,
-    SANTE_MENTALE
+    SANTE_MENTALE,
+    DOULEURS,
+    GERIATRIE,
+    ALIMENTATION
 
 
 }
