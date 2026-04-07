@@ -1,23 +1,31 @@
 package backend.entity;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+
 public class QuestionDefinition {
 
     private Integer id;
+    @Enumerated(EnumType.STRING)
     private CategorieChatbot categorie;
     private String question;
+    @Enumerated(EnumType.STRING)
     private TypeReponseChatbot typeReponse;
     private String declencheur;
+    @Enumerated(EnumType.STRING)
+    private Priorite priorite;
 
     public QuestionDefinition() {
     }
 
     public QuestionDefinition(Integer id, CategorieChatbot categorie, String question,
-            TypeReponseChatbot typeReponse, String declencheur) {
+            TypeReponseChatbot typeReponse, String declencheur, Priorite priorite) {
         this.id = id;
         this.categorie = categorie;
         this.question = question;
         this.typeReponse = typeReponse;
         this.declencheur = declencheur;
+        this.priorite = priorite;
     }
 
     public Integer getId() {
@@ -39,6 +47,9 @@ public class QuestionDefinition {
     public String getDeclencheur() {
         return declencheur;
     }
+    public Priorite getPriorite() {
+        return priorite;
+    }
 
     public void setId(Integer id) {
         this.id = id;
@@ -58,5 +69,8 @@ public class QuestionDefinition {
 
     public void setDeclencheur(String declencheur) {
         this.declencheur = declencheur;
+    }
+    public void setPriorite(Priorite priorite) {
+        this.priorite = priorite;
     }
 }
