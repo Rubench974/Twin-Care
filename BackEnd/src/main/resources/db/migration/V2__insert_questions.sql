@@ -1,4 +1,4 @@
-INSERT INTO question (id, texte, categorie, type_reponse, priorite, declencheur) VALUES
+INSERT INTO question_definition (id, texte, categorie, type_reponse, priorite, declencheur) VALUES
 
 -- MODE DE VIE (HABITUDES_DE_VIE)
 
