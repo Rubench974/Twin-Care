@@ -30,12 +30,6 @@
         Se connecter
       </v-btn>
     </v-form>
-    
-    <div class="mt-8 pa-4 bg-grey-lighten-4 rounded text-caption text-center">
-      Comptes de test :<br>
-      <strong>assistant@twincare.fr</strong> / pass<br>
-      <strong>medecin@twincare.fr</strong> / pass
-    </div>
   </v-card>
 </v-container>
 </template>
@@ -43,6 +37,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import api from '../services/api' // Import de l'instance axios (le relais)
 
 const router = useRouter()
 const emit = defineEmits(['mise-a-jour-auth'])
@@ -55,30 +50,55 @@ const errorMessage = ref('')
 const regles = { requis: v => !!v || 'Requis' }
 
 const soumettreConnexion = async () => {
-const { valid } = await formRef.value.validate()
-if (!valid) return
+  const { valid } = await formRef.value.validate()
+  if (!valid) return
 
-chargement.value = true
-errorMessage.value = ''
+  chargement.value = true
+  errorMessage.value = ''
 
-try {
-  await new Promise(resolve => setTimeout(resolve, 800)) // Simulation réseau
+  try {
+    // 1. On envoie la requête avec les BONS noms de variables pour ton Swagger
+    const reponse = await api.post('/api/auth/login', {
+      email: email.value, 
+      motDePasse: motDePasse.value // <-- C'est ce champ qui bloquait l'accès !
+    })
 
-  if (email.value === 'assistant@twincare.fr' && motDePasse.value === 'pass') {
-    localStorage.setItem('userRole', 'assistant')
+    const donneesUtilisateur = reponse.data
+    console.log("Connexion réussie ! Réponse :", donneesUtilisateur)
+
+    // 2. On sauvegarde le Token JWT pour les prochaines requêtes
+    if (donneesUtilisateur.token) {
+      localStorage.setItem('token', donneesUtilisateur.token)
+    }
+
+    // 3. On détermine le rôle (le toLowerCase permet d'éviter les bugs si le back renvoie "MEDECIN" en majuscules)
+    const role = donneesUtilisateur.role ? donneesUtilisateur.role.toLowerCase() : 'assistant' 
+    
+    localStorage.setItem('userRole', role)
     emit('mise-a-jour-auth')
-    router.push('/assistant')
-  } else if (email.value === 'medecin@twincare.fr' && motDePasse.value === 'pass') {
-    localStorage.setItem('userRole', 'medecin')
-    emit('mise-a-jour-auth')
-    router.push('/medecin')
-  } else {
-    throw new Error('Identifiants incorrects.')
+    
+    // 4. Redirection vers le bon tableau de bord
+    if (role === 'assistant') {
+      router.push('/assistant')
+    } else {
+      router.push('/medecin')
+    }
+
+  } catch (erreur) {
+    console.error("Échec de connexion :", erreur)
+    
+    // Gestion précise de l'affichage de l'erreur
+    if (erreur.response) {
+      if (erreur.response.status === 403 || erreur.response.status === 401) {
+        errorMessage.value = "Identifiants incorrects ou accès refusé." 
+      } else {
+        errorMessage.value = `Erreur du serveur (Code ${erreur.response.status}).`
+      }
+    } else {
+      errorMessage.value = "Impossible de joindre le serveur. Vérifiez votre connexion."
+    }
+  } finally {
+    chargement.value = false
   }
-} catch (erreur) {
-  errorMessage.value = erreur.message
-} finally {
-  chargement.value = false
-}
 }
 </script>
