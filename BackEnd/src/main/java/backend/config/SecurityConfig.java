@@ -31,11 +31,18 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
-                var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
-                corsConfiguration.setAllowedOrigins(java.util.List.of("http://localhost:3000", "http://localhost:3001", "http://192.168.56.1:3000", "http://192.168.1.17:3000", "https://twincare-t2xu.onrender.com"));
-                corsConfiguration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                corsConfiguration.setAllowedHeaders(java.util.List.of("*"));
-                return corsConfiguration;
+                    var config = new org.springframework.web.cors.CorsConfiguration();
+                    config.setAllowedOrigins(java.util.List.of(
+                        "http://localhost:3000",
+                        "http://localhost:3001",
+                        "http://192.168.56.1:3000",
+                        "http://192.168.1.17:3000",
+                        "https://twincare-t2xu.onrender.com"
+                    ));
+                    config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    config.setAllowedHeaders(java.util.List.of("*"));
+                    config.setAllowCredentials(true);
+                    return config;
                 }))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
