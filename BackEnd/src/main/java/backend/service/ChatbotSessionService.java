@@ -34,46 +34,44 @@ public class ChatbotSessionService {
     private final ChatbotTriggerEngineService triggerEngineService;
     private final ChatbotQuestionCatalogService catalogService;
 
-
     public ChatbotSessionService(AppUtilisateurRepository appUtilisateurRepository,
-                             DossierPatientRepository dossierPatientRepository,
-                             InteractionChatbotRepository interactionChatbotRepository,
-                             ChatbotTriggerEngineService triggerEngineService,
-                             ChatbotQuestionCatalogService catalogService) {
-    this.appUtilisateurRepository = appUtilisateurRepository;
-    this.dossierPatientRepository = dossierPatientRepository;
-    this.interactionChatbotRepository = interactionChatbotRepository;
-    this.triggerEngineService = triggerEngineService;
-    this.catalogService = catalogService;
-
-
+                                 DossierPatientRepository dossierPatientRepository,
+                                 InteractionChatbotRepository interactionChatbotRepository,
+                                 ChatbotTriggerEngineService triggerEngineService,
+                                 ChatbotQuestionCatalogService catalogService) {
+        this.appUtilisateurRepository = appUtilisateurRepository;
+        this.dossierPatientRepository = dossierPatientRepository;
+        this.interactionChatbotRepository = interactionChatbotRepository;
+        this.triggerEngineService = triggerEngineService;
+        this.catalogService = catalogService;
     }
 
-    public ChatbotSessionResponse demarrerSession(Long patientId) {
-    AppUtilisateur patient = appUtilisateurRepository.findById(patientId)
-            .orElseThrow(() -> new ResourceNotFoundException("Patient introuvable"));
+    public ChatbotSessionResponse demarrerSession(Long patientId, int limit) {
+        AppUtilisateur patient = appUtilisateurRepository.findById(patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient introuvable"));
 
-    DossierPatient dossier = dossierPatientRepository.findByPatientId(patientId)
-            .orElseThrow(() -> new ResourceNotFoundException("Dossier introuvable"));
+        DossierPatient dossier = dossierPatientRepository.findByPatientId(patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Dossier introuvable"));
 
-    PatientProfile profile = buildPatientProfile(patient, dossier);
+        PatientProfile profile = buildPatientProfile(patient, dossier);
 
-    Map<Integer, LocalDateTime> lastAnswerDates = new HashMap<>();
-    List<QuestionDefinition> allQuestions = catalogService.getAllQuestions();
-    for (QuestionDefinition q : allQuestions) {
-        interactionChatbotRepository.findLastAnswerDateByDossierAndQuestionId(dossier.getId(), q.getId())
-            .ifPresent(date -> lastAnswerDates.put(q.getId(), date));
+        Map<Integer, LocalDateTime> lastAnswerDates = new HashMap<>();
+        List<QuestionDefinition> allQuestions = catalogService.getAllQuestions();
+        for (QuestionDefinition q : allQuestions) {
+            interactionChatbotRepository.findLastAnswerDateByDossierAndQuestionId(dossier.getId(), q.getId())
+                .ifPresent(date -> lastAnswerDates.put(q.getId(), date));
+        }
+
+        List<ChatbotQuestionDto> questions = triggerEngineService.selectQuestions(profile, lastAnswerDates, limit);
+
+        ChatbotSessionResponse response = new ChatbotSessionResponse();
+        response.setPatientId(patientId);
+        response.setDossierId(dossier.getId());
+        response.setQuestions(questions);
+
+        return response;
     }
 
-    List<ChatbotQuestionDto> questions = triggerEngineService.selectQuestions(profile, lastAnswerDates);
-
-    ChatbotSessionResponse response = new ChatbotSessionResponse();
-    response.setPatientId(patientId);
-    response.setDossierId(dossier.getId());
-    response.setQuestions(questions);
-
-    return response;
-}
     @Transactional
     public InteractionChatbot enregistrerReponse(Long patientId, Long dossierId, ChatbotAnswerRequest request) {
         AppUtilisateur patient = appUtilisateurRepository.findById(patientId)
@@ -114,6 +112,8 @@ public class ChatbotSessionService {
             }
             interaction.setReponseNumerique(request.getReponseNumerique());
         }
+
+        // Déclenchement du flag "à revoir par professionnel"
         if (type == TypeReponseChatbot.OUI_NON && "OUI".equalsIgnoreCase(request.getReponseTexte())) {
             interaction.setARevoirParProfessionnel(true);
         } else if (type == TypeReponseChatbot.ECHELLE_1_5 && request.getReponseNumerique() != null
@@ -129,12 +129,11 @@ public class ChatbotSessionService {
         log.info("Réponse enregistrée pour le patient {} question {}", patientId, request.getQuestionId());
         return interactionChatbotRepository.save(interaction);
     }
-    @Transactional
+
     private PatientProfile buildPatientProfile(AppUtilisateur patient, DossierPatient dossier) {
         PatientProfile profile = new PatientProfile();
         profile.setPatientId(patient.getId());
 
-        // MVP: valeurs simulées / calculées simplement
         profile.setAge(Period.between(patient.getDateNaissance(), LocalDate.now()).getYears());
         profile.setSexe(patient.getSexe());
         profile.setDossierIncomplet(dossier.getDocuments() == null || dossier.getDocuments().isEmpty());
@@ -161,10 +160,8 @@ public class ChatbotSessionService {
         return profile;
     }
 
-    @Transactional
     private String getCurrentSeason() {
         Month month = LocalDate.now().getMonth();
-
         return switch (month) {
             case MARCH, APRIL, MAY -> "PRINTEMPS";
             case JUNE, JULY, AUGUST -> "ETE";

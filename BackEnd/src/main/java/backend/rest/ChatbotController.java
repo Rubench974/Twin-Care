@@ -18,9 +18,15 @@ public class ChatbotController {
         this.chatbotSessionService = chatbotSessionService;
     }
 
+    
     @GetMapping("/session/patient/{patientId}")
-    public ChatbotSessionResponse demarrerSession(@PathVariable Long patientId) {
-        return chatbotSessionService.demarrerSession(patientId);
+    public ChatbotSessionResponse demarrerSession(@PathVariable Long patientId,
+                                                  @RequestParam(defaultValue = "2") int limit) {
+        // Sécurité backend : on ne dépasse pas 5 questions
+        if (limit > 5) {
+            limit = 5;
+        }
+        return chatbotSessionService.demarrerSession(patientId, limit);
     }
 
     @PostMapping("/session/patient/{patientId}/dossier/{dossierId}/answer")
