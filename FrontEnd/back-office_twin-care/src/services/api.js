@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // baseURL DOIT être vide maintenant !
-  baseURL: '', 
+  baseURL: '', // <-- DOIT ÊTRE VIDE (juste deux guillemets simples)
   headers: {
     'Content-Type': 'application/json',
   },

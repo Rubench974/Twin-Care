@@ -9,13 +9,15 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-  // C'est cette partie qui fait la magie du relais
   server: {
     proxy: {
       '/api': {
         target: 'https://twincare-t2xu.onrender.com',
         changeOrigin: true,
-        secure: false
+        secure: false,
+        headers: {
+          Origin: 'https://twincare-t2xu.onrender.com'
+        }
       }
     }
   }
