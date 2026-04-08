@@ -18,7 +18,7 @@
       </h2>
     </div>
 
-    <v-row class="w-100 px-6" style="max-width: 380px;" justify="center">
+    <v-row v-if="questionId" class="w-100 px-6" style="max-width: 380px;" justify="center">
       <v-col cols="6" class="pr-2">
         <v-btn @click="envoyerReponse('Oui')" variant="outlined" block rounded="xl" size="large" color="#2c3e50" class="font-weight-bold bg-white text-none" style="border-width: 1.5px; height: 50px;">
           Oui
@@ -39,37 +39,90 @@ import { ref, inject, onMounted } from 'vue'
 
 const toggleDrawer = inject('toggleDrawer')
 const questionActuelle = ref("Chargement de la question...")
-const url = "https://twincare-t2xu.onrender.com/api/chatbot"
+const questionId = ref(null) 
+const url = "https://twincare-t2xu.onrender.com/api/chatbot" 
 
 function getQuestion() {
-  const token = localStorage.getItem('user-token')
+  const token = localStorage.getItem('token')
+  const patientId = localStorage.getItem('patientId')
+
+  if (!patientId) {
+    questionActuelle.value = "Erreur : Veuillez vous reconnecter."
+    return
+  }
+
   const myHeaders = new Headers()
   myHeaders.append("Authorization", "Bearer " + token)
 
-  fetch(url, { method: "GET", headers: myHeaders })
-    .then(response => response.json())
-    .then(data => {
-      if (data.question) questionActuelle.value = data.question
-      else questionActuelle.value = "Avez vous des antécédents médicaux liés aux problèmes cardiaques ?"
+  fetch(`${url}/session/patient/${patientId}?limit=1`, { method: "GET", headers: myHeaders })
+    .then(response => {
+      if (response.status === 204) {
+         return null; 
+      }
+      if (!response.ok) throw new Error("Erreur serveur")
+      return response.json()
     })
-    .catch(err => console.log(err))
+    .then(data => {
+      console.log("DÉTECTEUR - Réponse d'Ousman :", data);
+      
+      let questionRecue = null;
+      
+      if (data && data.questions && data.questions.length > 0) {
+         questionRecue = data.questions[0]; 
+      } else if (data && data.question) {
+         questionRecue = data.question; 
+      } else if (data && data.id) {
+         questionRecue = data; 
+      }
+
+      if (questionRecue) {
+         questionActuelle.value = questionRecue.texte || questionRecue.libelle || "Texte de question introuvable";
+         questionId.value = questionRecue.id || questionRecue.questionId;
+      } else {
+         questionActuelle.value = "Fumez-vous du tabac, même occasionnellement ?";
+         questionId.value = 999;
+      }
+    })
+    .catch(err => {
+      console.log(err)
+      questionActuelle.value = "Erreur de connexion au serveur."
+    })
 }
 
 function envoyerReponse(choix) {
-  const token = localStorage.getItem('user-token')
+  if (!questionId.value) return; 
+
+  const token = localStorage.getItem('token')
+  const patientId = localStorage.getItem('patientId')
+  const dossierId = localStorage.getItem('dossierId') 
+  
+  if (!dossierId) {
+      console.error("Aucun dossier médical lié à ce compte.");
+      return;
+  }
+
   const myHeaders = new Headers()
   myHeaders.append("Content-Type", "application/json")
   myHeaders.append("Authorization", "Bearer " + token)
 
-  const fetchOptions = {
-    method: "POST",
-    headers: myHeaders,
-    body: JSON.stringify({ reponse: choix })
+  const payload = {
+    questionId: questionId.value,
+    reponse: choix 
   }
 
-  fetch(url, fetchOptions)
+  fetch(`${url}/session/patient/${patientId}/dossier/${dossierId}/answer`, { 
+    method: "POST", 
+    headers: myHeaders, 
+    body: JSON.stringify(payload) 
+  })
     .then(response => {
-      if (response.ok) console.log("Réponse enregistrée")
+      if (response.ok) {
+        console.log("Réponse validée par le serveur !")
+        questionActuelle.value = "Chargement de la suite..."
+        getQuestion() 
+      } else {
+        console.error("Erreur lors de l'envoi de la réponse");
+      }
     })
     .catch(err => console.log(err))
 }

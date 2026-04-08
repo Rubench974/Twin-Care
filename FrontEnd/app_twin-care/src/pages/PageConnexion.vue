@@ -102,9 +102,19 @@ function seConnecter() {
       return response.json();
     })
     .then((dataJSON) => {
-      console.log(dataJSON); 
-      chargement.value = false;
+      console.log("Connexion réussie :", dataJSON); 
       
+      localStorage.setItem('token', dataJSON.token);
+      localStorage.setItem('role', dataJSON.role);
+      
+      if (dataJSON.patientId) {
+        localStorage.setItem('patientId', dataJSON.patientId);
+      }
+      if (dataJSON.dossierId) {
+        localStorage.setItem('dossierId', dataJSON.dossierId);
+      }
+
+      chargement.value = false;
       router.push('/documents');
     })
     .catch((error) => {
