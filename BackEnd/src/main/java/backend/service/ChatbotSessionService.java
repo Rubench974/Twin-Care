@@ -1,27 +1,33 @@
 package backend.service;
 
-import backend.dto.ChatbotAnswerRequest;
-import backend.dto.ChatbotQuestionDto;
-import backend.dto.ChatbotSessionResponse;
-import backend.entity.*;
-import backend.exception.BadRequestException;
-import backend.exception.ResourceNotFoundException;
-import backend.dao.AppUtilisateurRepository;
-import backend.dao.DossierPatientRepository;
-import backend.dao.InteractionChatbotRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.Period;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Month;
-import java.time.Period;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import backend.dao.AppUtilisateurRepository;
+import backend.dao.DossierPatientRepository;
+import backend.dao.InteractionChatbotRepository;
+import backend.dto.ChatbotAnswerRequest;
+import backend.dto.ChatbotQuestionDto;
+import backend.dto.ChatbotSessionResponse;
+import backend.entity.AppUtilisateur;
+import backend.entity.CategorieChatbot;
+import backend.entity.DossierPatient;
+import backend.entity.InteractionChatbot;
+import backend.entity.PatientProfile;
+import backend.entity.QuestionDefinition;
+import backend.entity.TypeReponseChatbot;
+import backend.exception.BadRequestException;
+import backend.exception.ResourceNotFoundException;
 
 @Service
 public class ChatbotSessionService {
@@ -93,8 +99,9 @@ public class ChatbotSessionService {
         if (type == TypeReponseChatbot.OUI_NON) {
             if (request.getReponseTexte() == null ||
                     (!"OUI".equalsIgnoreCase(request.getReponseTexte()) &&
-                     !"NON".equalsIgnoreCase(request.getReponseTexte()))) {
-                throw new BadRequestException("Réponse OUI/NON invalide");
+                     !"NON".equalsIgnoreCase(request.getReponseTexte()) &&
+                     !"JE_NE_SAIS_PAS".equalsIgnoreCase(request.getReponseTexte()))) {
+                throw new BadRequestException("Réponse OUI/NON/JE_NE_SAIS_PAS invalide");
             }
             interaction.setReponseTexte(request.getReponseTexte().toUpperCase());
         }
@@ -113,7 +120,6 @@ public class ChatbotSessionService {
             interaction.setReponseNumerique(request.getReponseNumerique());
         }
 
-        // Déclenchement du flag "à revoir par professionnel"
         if (type == TypeReponseChatbot.OUI_NON && "OUI".equalsIgnoreCase(request.getReponseTexte())) {
             interaction.setARevoirParProfessionnel(true);
         } else if (type == TypeReponseChatbot.ECHELLE_1_5 && request.getReponseNumerique() != null
