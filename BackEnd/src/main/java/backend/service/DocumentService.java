@@ -1,21 +1,21 @@
 package backend.service;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import backend.dao.DocumentRepository;
+import backend.dao.DossierPatientRepository;
 import backend.dto.DocumentUploadRequest;
 import backend.entity.Document;
 import backend.entity.DossierPatient;
 import backend.entity.StatutDocument;
 import backend.exception.BadRequestException;
 import backend.exception.ResourceNotFoundException;
-import backend.dao.DocumentRepository;
-import backend.dao.DossierPatientRepository;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 public class DocumentService {
@@ -83,5 +83,14 @@ public class DocumentService {
     public Document getById(Long documentId) {
         return documentRepository.findById(documentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Document introuvable"));
+    }
+
+    @Transactional
+    public void deleteDocument(Long documentId) {
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Document introuvable"));
+
+        documentRepository.delete(document);
+        log.info("Document supprimé : ID {}", documentId);
     }
 }
