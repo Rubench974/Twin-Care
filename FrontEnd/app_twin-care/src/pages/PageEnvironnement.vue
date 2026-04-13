@@ -1,7 +1,7 @@
 <template>
   <div style="position: relative; width: 100%; height: 100vh; overflow: hidden;">
 
-    <div id="mapcarto" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;"></div>
+    <div ref="mapContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;"></div>
 
     <div style="position: absolute; top: 40px; left: 0; width: 100%; padding: 0 16px; display: flex; align-items: center; z-index: 1000;">
 
@@ -16,7 +16,7 @@
             {{ modeActif === 'pollen' ? envData.pollenStatus : envData.airStatus }}
           </div>
           <div v-else class="text-caption" style="color: #6B7280; margin-top: -2px;">
-            Analyse en cours...
+            Recherche de position...
           </div>
         </div>
         <v-spacer></v-spacer>
@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from "vue";
+import { ref, onMounted, onUnmounted, inject, nextTick } from "vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -52,19 +52,50 @@ const envData = ref({
   pollenColor: "#9e9e9e"
 });
 
+const mapContainer = ref(null); 
 let map = null;
 let currentLayer = null;
 
-const lat = 43.60548;
-const lon = 2.24167;
+let userLat = 43.60548;
+let userLon = 2.24167;
 
-function initialiserCarte() {
-  map = L.map('mapcarto', { zoomControl: false }).setView([lat, lon], 13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
-  chargerDonneesBackend();
+function demanderGeolocalisation() {
+  isLoading.value = true;
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        userLat = position.coords.latitude;
+        userLon = position.coords.longitude;
+        initialiserCarte(userLat, userLon);
+      },
+      (error) => {
+        console.warn("Géolocalisation refusée ou indisponible.", error);
+        initialiserCarte(userLat, userLon);
+      },
+      { timeout: 10000 }
+    );
+  } else {
+    initialiserCarte(userLat, userLon);
+  }
 }
 
-function chargerDonneesBackend() {
+async function initialiserCarte(lat, lon) {
+  await nextTick();
+
+  if (!mapContainer.value) return;
+
+  if (!map) {
+    map = L.map(mapContainer.value, { zoomControl: false }).setView([lat, lon], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
+  } else {
+    map.setView([lat, lon], 13);
+  }
+  
+  chargerDonneesBackend(lat, lon);
+}
+
+function chargerDonneesBackend(lat, lon) {
   const token = localStorage.getItem('token');
   const url = `https://twincare-t2xu.onrender.com/api/environnement/donnees?lat=${lat}&lon=${lon}`;
 
@@ -79,20 +110,22 @@ function chargerDonneesBackend() {
     dessinerZone();
   })
   .catch(err => {
-    console.error("Erreur météo:", err);
+    console.error("Erreur API Environnement:", err);
     isLoading.value = false;
     dessinerZone();
   });
 }
 
 function dessinerZone() {
+  if (!map) return;
+
   if (currentLayer !== null) {
     map.removeLayer(currentLayer);
   }
 
   const couleurActuelle = modeActif.value === 'pollen' ? envData.value.pollenColor : envData.value.airColor;
 
-  currentLayer = L.circle([lat, lon], {
+  currentLayer = L.circle([userLat, userLon], {
     stroke: false,
     fillColor: couleurActuelle,
     fillOpacity: 0.35,
@@ -106,15 +139,19 @@ function basculerMode() {
 }
 
 onMounted(() => {
-  initialiserCarte();
+  demanderGeolocalisation();
+});
+
+onUnmounted(() => {
+  if (map) {
+    map.remove();
+    map = null;
+  }
 });
 </script>
 
 <style scoped>
 :deep(.leaflet-control-attribution) {
   display: none !important;
-}
-#mapcarto {
-  z-index: 0;
 }
 </style>
