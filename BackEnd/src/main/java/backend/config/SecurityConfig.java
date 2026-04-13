@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/validations/**").hasAnyAuthority("ASSISTANT_MEDICAL", "ROLE_ASSISTANT_MEDICAL", "MEDECIN", "ROLE_MEDECIN")
                         .requestMatchers("/api/chatbot/**").hasAnyAuthority("PATIENT", "ROLE_PATIENT")
                         .requestMatchers("/api/parcours/**").hasAnyAuthority("PATIENT", "ROLE_PATIENT", "ASSISTANT_MEDICAL", "ROLE_ASSISTANT_MEDICAL", "MEDECIN", "ROLE_MEDECIN")
+                        .requestMatchers("/api/environnement/**").hasAnyAuthority("PATIENT", "ROLE_PATIENT")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userService);
