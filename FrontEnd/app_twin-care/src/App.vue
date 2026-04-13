@@ -7,7 +7,7 @@
       </div>
 
       <v-list class="pa-2 mt-2">
-        <v-list-item link prepend-icon="mdi-file-document-outline" title="Mes documents" class="py-3">
+        <v-list-item to="/mes-documents" prepend-icon="mdi-file-document-outline" title="Mes documents" class="py-3">
           <template v-slot:append><v-icon size="small">mdi-chevron-right</v-icon></template>
         </v-list-item>
 
