@@ -37,6 +37,7 @@ public class SecurityConfig {
                         "http://localhost:3001",
                         "http://192.168.56.1:3000",
                         "http://192.168.1.17:3000",
+                        "http://192.168.1.118:3000",
                         "http://localhost:5173",
                         "https://twincare-t2xu.onrender.com"
                     ));
@@ -54,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/validations/**").hasAnyAuthority("ASSISTANT_MEDICAL", "ROLE_ASSISTANT_MEDICAL", "MEDECIN", "ROLE_MEDECIN")
                         .requestMatchers("/api/chatbot/**").hasAnyAuthority("PATIENT", "ROLE_PATIENT")
                         .requestMatchers("/api/parcours/**").hasAnyAuthority("PATIENT", "ROLE_PATIENT", "ASSISTANT_MEDICAL", "ROLE_ASSISTANT_MEDICAL", "MEDECIN", "ROLE_MEDECIN")
+                        .requestMatchers("/api/environnement/**").hasAnyAuthority("PATIENT", "ROLE_PATIENT")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userService);
