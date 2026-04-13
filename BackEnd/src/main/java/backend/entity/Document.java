@@ -2,6 +2,7 @@ package backend.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -54,7 +55,8 @@ public class Document {
 
     @ManyToOne
     @JoinColumn(name = "dossier_patient_id", nullable = false)
-    @JsonIgnore
+@JsonIgnore // Empêche de remonter vers le dossier lors de la sérialisation du document
+    private DossierPatient dossierPatient;
     private DossierPatient dossierPatient;
 
     @OneToOne(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)

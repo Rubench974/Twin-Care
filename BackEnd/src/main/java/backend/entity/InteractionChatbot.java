@@ -2,6 +2,7 @@ package backend.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "interaction_chatbot")
@@ -37,10 +38,12 @@ public class InteractionChatbot {
 
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
+    @JsonIgnore // Coupe le lien vers le patient
     private AppUtilisateur patient;
 
     @ManyToOne
     @JoinColumn(name = "dossier_patient_id", nullable = false)
+    @JsonIgnore // Coupe le lien vers le dossier
     private DossierPatient dossierPatient;
 
     public InteractionChatbot() {
@@ -49,28 +52,95 @@ public class InteractionChatbot {
         this.aRevoirParProfessionnel = true;
     }
 
-    public Long getId() { return id; }
-    public LocalDateTime getDateInteraction() { return dateInteraction; }
-    public Integer getQuestionId() { return questionId; }
-    public String getQuestion() { return question; }
-    public CategorieChatbot getCategorie() { return categorie; }
-    public TypeReponseChatbot getTypeReponse() { return typeReponse; }
-    public String getReponseTexte() { return reponseTexte; }
-    public Integer getReponseNumerique() { return reponseNumerique; }
-    public boolean isDeclaratifPatient() { return declaratifPatient; }
-    public boolean isARevoirParProfessionnel() { return aRevoirParProfessionnel; }
-    public AppUtilisateur getPatient() { return patient; }
-    public DossierPatient getDossierPatient() { return dossierPatient; }
+    public Long getId() {
+        return id;
+    }
 
-    public void setDateInteraction(LocalDateTime dateInteraction) { this.dateInteraction = dateInteraction; }
-    public void setQuestionId(Integer questionId) { this.questionId = questionId; }
-    public void setQuestion(String question) { this.question = question; }
-    public void setCategorie(CategorieChatbot categorie) { this.categorie = categorie; }
-    public void setTypeReponse(TypeReponseChatbot typeReponse) { this.typeReponse = typeReponse; }
-    public void setReponseTexte(String reponseTexte) { this.reponseTexte = reponseTexte; }
-    public void setReponseNumerique(Integer reponseNumerique) { this.reponseNumerique = reponseNumerique; }
-    public void setDeclaratifPatient(boolean declaratifPatient) { this.declaratifPatient = declaratifPatient; }
-    public void setARevoirParProfessionnel(boolean aRevoirParProfessionnel) { this.aRevoirParProfessionnel = aRevoirParProfessionnel; }
-    public void setPatient(AppUtilisateur patient) { this.patient = patient; }
-    public void setDossierPatient(DossierPatient dossierPatient) { this.dossierPatient = dossierPatient; }
+    public LocalDateTime getDateInteraction() {
+        return dateInteraction;
+    }
+
+    public Integer getQuestionId() {
+        return questionId;
+    }
+
+    public String getQuestion() {
+        return question;
+    }
+
+    public CategorieChatbot getCategorie() {
+        return categorie;
+    }
+
+    public TypeReponseChatbot getTypeReponse() {
+        return typeReponse;
+    }
+
+    public String getReponseTexte() {
+        return reponseTexte;
+    }
+
+    public Integer getReponseNumerique() {
+        return reponseNumerique;
+    }
+
+    public boolean isDeclaratifPatient() {
+        return declaratifPatient;
+    }
+
+    public boolean isARevoirParProfessionnel() {
+        return aRevoirParProfessionnel;
+    }
+
+    public AppUtilisateur getPatient() {
+        return patient;
+    }
+
+    public DossierPatient getDossierPatient() {
+        return dossierPatient;
+    }
+
+    public void setDateInteraction(LocalDateTime dateInteraction) {
+        this.dateInteraction = dateInteraction;
+    }
+
+    public void setQuestionId(Integer questionId) {
+        this.questionId = questionId;
+    }
+
+    public void setQuestion(String question) {
+        this.question = question;
+    }
+
+    public void setCategorie(CategorieChatbot categorie) {
+        this.categorie = categorie;
+    }
+
+    public void setTypeReponse(TypeReponseChatbot typeReponse) {
+        this.typeReponse = typeReponse;
+    }
+
+    public void setReponseTexte(String reponseTexte) {
+        this.reponseTexte = reponseTexte;
+    }
+
+    public void setReponseNumerique(Integer reponseNumerique) {
+        this.reponseNumerique = reponseNumerique;
+    }
+
+    public void setDeclaratifPatient(boolean declaratifPatient) {
+        this.declaratifPatient = declaratifPatient;
+    }
+
+    public void setARevoirParProfessionnel(boolean aRevoirParProfessionnel) {
+        this.aRevoirParProfessionnel = aRevoirParProfessionnel;
+    }
+
+    public void setPatient(AppUtilisateur patient) {
+        this.patient = patient;
+    }
+
+    public void setDossierPatient(DossierPatient dossierPatient) {
+        this.dossierPatient = dossierPatient;
+    }
 }
