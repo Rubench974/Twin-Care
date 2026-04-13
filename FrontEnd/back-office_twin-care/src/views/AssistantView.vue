@@ -235,8 +235,12 @@ const ouvrirDossier = async (patient) => {
   documents.value = []
 
   try {
-    // On utilise l'ID du patient récupéré depuis la base de données
-    const reponse = await api.get(`/api/documents/dossier/${patient.id}`)
+    // 1. Récupérer le dossier du patient
+    const dossierReponse = await api.get(`/api/dossiers/patient/${patient.id}`)
+    const dossierId = dossierReponse.data.id
+
+    // 2. Récupérer les documents avec l'ID du dossier
+    const reponse = await api.get(`/api/documents/dossier/${dossierId}`)
     documents.value = reponse.data
   } catch (erreur) {
     console.error("Erreur récupération documents:", erreur)
@@ -244,7 +248,6 @@ const ouvrirDossier = async (patient) => {
     chargementDocs.value = false
   }
 }
-
 const validerDocument = async (documentId, decision) => {
   try {
     await api.post(`/api/validations/document/${documentId}`, {
