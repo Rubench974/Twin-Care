@@ -32,20 +32,29 @@
             File Active du Cabinet (Dossiers EN_COURS)
           </v-card-title>
           <v-divider></v-divider>
-          <v-table>
+          
+          <div v-if="chargementTableau" class="text-center pa-4">
+            <v-progress-circular indeterminate color="#156500"></v-progress-circular>
+            <p class="mt-2 text-grey">Chargement des patients...</p>
+          </div>
+
+          <v-table v-else>
             <thead class="bg-grey-lighten-4">
               <tr>
                 <th class="font-weight-bold">Patient</th>
-                <th class="font-weight-bold">ID Dossier</th>
-                <th class="font-weight-bold">Heure rdv</th>
+                <th class="font-weight-bold">Email</th>
+                <th class="font-weight-bold">ID Système</th>
                 <th class="text-right font-weight-bold">Actions</th>
               </tr>
             </thead>
             <tbody>
+              <tr v-if="patients.length === 0">
+                <td colspan="4" class="text-center py-4 text-grey">Aucun patient n'est encore enregistré dans la base de données.</td>
+              </tr>
               <tr v-for="patient in patients" :key="patient.id" class="hover-row">
-                <td class="font-weight-medium py-3">{{ patient.nom }}</td>
-                <td><v-chip size="small">Dossier n°{{ patient.dossierId }}</v-chip></td>
-                <td>{{ patient.heure }}</td>
+                <td class="font-weight-medium py-3">{{ patient.nom }} {{ patient.prenom }}</td>
+                <td>{{ patient.email }}</td>
+                <td><v-chip size="small">ID: {{ patient.id }}</v-chip></td>
                 <td class="text-right">
                   <v-btn size="small" color="#156500" class="text-white" prepend-icon="mdi-folder-open" @click="ouvrirDossier(patient)">
                     Gérer Dossier
@@ -90,7 +99,7 @@
       <v-card class="rounded-xl pa-2">
         <v-card-title class="text-h5 font-weight-bold d-flex align-center mt-2" style="color: #156500;">
           <v-icon start color="#156500" class="mr-2">mdi-file-document-multiple</v-icon>
-          Documents de {{ patientSelectionne?.nom }}
+          Documents de {{ patientSelectionne?.nom }} {{ patientSelectionne?.prenom }}
         </v-card-title>
         <v-divider></v-divider>
         
@@ -101,7 +110,7 @@
           </div>
 
           <v-alert v-else-if="documents.length === 0" type="info" variant="tonal">
-            Aucun document trouvé pour le dossier n°{{ patientSelectionne?.dossierId }}.
+            Aucun document trouvé pour ce patient.
           </v-alert>
 
           <v-list v-else lines="three">
@@ -136,20 +145,39 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 
 const router = useRouter()
 
-// --- LOGIQUE GÉNÉRALE ---
 const deconnexion = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('role')
+  localStorage.removeItem('userId')
   router.push('/login')
 }
 
-// --- LOGIQUE : NOUVEAU PATIENT ---
+const patients = ref([])
+const chargementTableau = ref(false)
+
+const chargerPatients = async () => {
+  chargementTableau.value = true
+  try {
+    const reponse = await api.get('/api/users')
+    patients.value = reponse.data.filter(u => u.role === 'PATIENT')
+  } catch (erreur) {
+    console.error("Erreur de récupération des patients.", erreur)
+    patients.value = []
+  } finally {
+    chargementTableau.value = false
+  }
+}
+
+onMounted(() => {
+  chargerPatients()
+})
+
 const dialogPatient = ref(false)
 const chargementPatient = ref(false)
 const msgCreation = ref('')
@@ -163,31 +191,27 @@ const creerPatient = async () => {
     await api.post('/api/auth/register', nouveau.value)
     typeMsg.value = 'success'
     msgCreation.value = "Patient créé avec succès dans la base !"
-    // On réinitialise le formulaire
+    await chargerPatients()
     nouveau.value = { nom: '', prenom: '', dateNaissance: '', email: '', motDePasse: '', role: 'PATIENT', sexe: null }
     setTimeout(() => { dialogPatient.value = false; msgCreation.value = '' }, 2000)
   } catch (erreur) {
     typeMsg.value = 'error'
-    msgCreation.value = "Erreur de création. Vérifiez les champs."
+    msgCreation.value = "Erreur de création. L'email existe-t-il déjà ?"
   } finally {
     chargementPatient.value = false
   }
 }
 
-// --- LOGIQUE : GESTION DES DOCUMENTS ---
-const patients = ref([
-  { id: 1, nom: "Martin Sophie", dossierId: 1, heure: "09:00" },
-  { id: 2, nom: "Bernard Lucas", dossierId: 2, heure: "09:30" }
-])
 const dialogDossier = ref(false)
 const patientSelectionne = ref(null)
 const documents = ref([])
 const chargementDocs = ref(false)
+const dossierId = ref(null)
 
 const couleurStatut = (statut) => {
   if (statut === 'VALIDE') return 'green'
   if (statut === 'REFUSE') return 'red'
-  return 'orange' 
+  return 'orange'
 }
 
 const ouvrirDossier = async (patient) => {
@@ -197,7 +221,10 @@ const ouvrirDossier = async (patient) => {
   documents.value = []
 
   try {
-    const reponse = await api.get(`/api/documents/dossier/${patient.dossierId}`)
+    const dossierReponse = await api.get(`/api/dossiers/patient/${patient.id}`)
+    dossierId.value = dossierReponse.data.id
+
+    const reponse = await api.get(`/api/documents/dossier/${dossierId.value}`)
     documents.value = reponse.data
   } catch (erreur) {
     console.error("Erreur récupération documents:", erreur)
@@ -208,14 +235,17 @@ const ouvrirDossier = async (patient) => {
 
 const validerDocument = async (documentId, decision) => {
   try {
+    const assistantId = localStorage.getItem('userId')
     await api.post(`/api/validations/document/${documentId}`, {
       decision: decision,
-      commentaire: "Traité par l'assistant(e)"
+      commentaire: "Traité par l'assistant(e)",
+      assistantMedicalId: Number(assistantId)
     })
-    ouvrirDossier(patientSelectionne.value)
+    const reponse = await api.get(`/api/documents/dossier/${dossierId.value}`)
+    documents.value = reponse.data
   } catch (erreur) {
     console.error("Erreur de validation:", erreur)
-    alert("Erreur lors de la validation. Le backend est-il réveillé ?")
+    alert("Erreur lors de la validation.")
   }
 }
 </script>

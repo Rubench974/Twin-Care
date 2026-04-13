@@ -11,6 +11,7 @@ import backend.dao.DossierPatientRepository;
 import backend.dto.AuthResponse;
 import backend.dto.LoginRequest;
 import backend.dto.RegisterRequest;
+import backend.dto.ResetPasswordRequest;
 import backend.entity.AppUtilisateur;
 import backend.entity.DossierPatient;
 import backend.entity.Role;
@@ -77,7 +78,7 @@ public class AuthService {
         var userDetails = userDetailsService.loadUserByUsername(saved.getEmail());
         String token = jwtService.generateToken(userDetails);
 
-        return new AuthResponse(token, saved.getEmail(), saved.getRole().name(), saved.getId(), dossierId);
+        return new AuthResponse(token, saved.getEmail(), saved.getRole().name(), saved.getId(), dossierId, saved.getPrenom(), saved.getNom());
     }
 
     public AuthResponse login(LoginRequest req) {
@@ -99,6 +100,16 @@ public class AuthService {
         }
 
         log.info("Connexion utilisateur : {}", user.getEmail());
-        return new AuthResponse(token, user.getEmail(), user.getRole().name(), user.getId(), dossierId);
+        return new AuthResponse(token, user.getEmail(), user.getRole().name(), user.getId(), dossierId, user.getPrenom(), user.getNom());
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest req) {
+        AppUtilisateur user = repo.findByEmail(req.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+
+        user.setMotDePasse(encoder.encode(req.getNouveauMotDePasse()));
+        repo.save(user);
+        log.info("Mot de passe réinitialisé pour : {}", user.getEmail());
     }
 }

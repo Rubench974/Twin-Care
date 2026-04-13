@@ -1,6 +1,7 @@
 package backend.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore; // Import obligatoire pour bloquer la boucle infinie
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class AppUtilisateur {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore // Sécurité : ne jamais envoyer le mot de passe au Front-End
     private String motDePasse;
 
     @Enumerated(EnumType.STRING)
@@ -41,15 +43,18 @@ public class AppUtilisateur {
     private DossierPatient dossierPatient;
 
     @OneToMany(mappedBy = "patient")
+    @JsonIgnore // Casse la boucle infinie de sérialisation JSON
     private List<InteractionChatbot> interactionsChatbot = new ArrayList<>();
 
     @OneToMany(mappedBy = "assistantMedical")
+    @JsonIgnore // Casse la boucle infinie de sérialisation JSON
     private List<Validation> validationsRealisees = new ArrayList<>();
 
     public AppUtilisateur() {
     }
 
-    public AppUtilisateur(String nom, String prenom, LocalDate dateNaissance, String email, String motDePasse, Role role, Sexe sexe) {
+    public AppUtilisateur(String nom, String prenom, LocalDate dateNaissance, String email, String motDePasse,
+            Role role, Sexe sexe) {
         this.nom = nom;
         this.prenom = prenom;
         this.dateNaissance = dateNaissance;
@@ -78,13 +83,16 @@ public class AppUtilisateur {
     public void setPrenom(String prenom) {
         this.prenom = prenom;
     }
+
     public LocalDate getDateNaissance() {
         return dateNaissance;
     }
+
     public void setDateNaissance(LocalDate dateNaissance) {
         this.dateNaissance = dateNaissance;
     }
-   public String getEmail() {
+
+    public String getEmail() {
         return email;
     }
 
@@ -107,9 +115,11 @@ public class AppUtilisateur {
     public void setRole(Role role) {
         this.role = role;
     }
+
     public Sexe getSexe() {
         return sexe;
     }
+
     public void setSexe(Sexe sexe) {
         this.sexe = sexe;
     }

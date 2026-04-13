@@ -1,7 +1,7 @@
 <template>
   <div style="position: relative; width: 100%; height: 100vh; overflow: hidden;">
 
-    <div id="mapcarto" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;"></div>
+    <div ref="mapContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;"></div>
 
     <div style="position: absolute; top: 40px; left: 0; width: 100%; padding: 0 16px; display: flex; align-items: center; z-index: 1000;">
 
@@ -12,12 +12,15 @@
           <div class="font-weight-bold" style="font-size: 0.95rem; color: #37474F;">
             Carte {{ modeActif === 'pollen' ? 'du pollen' : 'de l\'air' }}
           </div>
-          <div class="text-caption" style="color: #6B7280; margin-top: -2px;">
-            {{ modeActif === 'pollen' ? 'Taux modéré' : 'Qualité bonne' }}
+          <div v-if="!isLoading" class="text-caption font-weight-medium" :style="{ color: modeActif === 'pollen' ? envData.pollenColor : envData.airColor, marginTop: '-2px' }">
+            {{ modeActif === 'pollen' ? envData.pollenStatus : envData.airStatus }}
+          </div>
+          <div v-else class="text-caption" style="color: #6B7280; margin-top: -2px;">
+            Recherche de position...
           </div>
         </div>
         <v-spacer></v-spacer>
-        <v-icon size="28" color="#37474F">
+        <v-icon size="28" :color="modeActif === 'pollen' ? envData.pollenColor : envData.airColor">
           {{ modeActif === 'pollen' ? 'mdi-flower-pollen' : 'mdi-cloud-outline' }}
         </v-icon>
       </v-card>
@@ -34,65 +37,121 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from "vue";
+import { ref, onMounted, onUnmounted, inject, nextTick } from "vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-const toggleDrawer = inject('toggleDrawer')
+const toggleDrawer = inject('toggleDrawer');
 const modeActif = ref('pollen');
+const isLoading = ref(true);
 
+const envData = ref({
+  airStatus: "En attente...",
+  airColor: "#9e9e9e",
+  pollenStatus: "En attente...",
+  pollenColor: "#9e9e9e"
+});
+
+const mapContainer = ref(null); 
 let map = null;
 let currentLayer = null;
 
-function initialiserCarte() {
-  map = L.map('mapcarto', { zoomControl: false }).setView([43.60548, 2.24167], 13);
+let userLat = 43.60548;
+let userLon = 2.24167;
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
+function demanderGeolocalisation() {
+  isLoading.value = true;
 
-  dessinerZone();
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        userLat = position.coords.latitude;
+        userLon = position.coords.longitude;
+        initialiserCarte(userLat, userLon);
+      },
+      (error) => {
+        console.warn("Géolocalisation refusée ou indisponible.", error);
+        initialiserCarte(userLat, userLon);
+      },
+      { timeout: 10000 }
+    );
+  } else {
+    initialiserCarte(userLat, userLon);
+  }
+}
+
+async function initialiserCarte(lat, lon) {
+  await nextTick();
+
+  if (!mapContainer.value) return;
+
+  if (!map) {
+    map = L.map(mapContainer.value, { zoomControl: false }).setView([lat, lon], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
+  } else {
+    map.setView([lat, lon], 13);
+  }
+  
+  chargerDonneesBackend(lat, lon);
+}
+
+function chargerDonneesBackend(lat, lon) {
+  const token = localStorage.getItem('token');
+  const url = `https://twincare-t2xu.onrender.com/api/environnement/donnees?lat=${lat}&lon=${lon}`;
+
+  fetch(url, {
+    method: "GET",
+    headers: { "Authorization": "Bearer " + token }
+  })
+  .then(res => res.json())
+  .then(data => {
+    envData.value = data;
+    isLoading.value = false;
+    dessinerZone();
+  })
+  .catch(err => {
+    console.error("Erreur API Environnement:", err);
+    isLoading.value = false;
+    dessinerZone();
+  });
 }
 
 function dessinerZone() {
+  if (!map) return;
+
   if (currentLayer !== null) {
     map.removeLayer(currentLayer);
   }
 
-  if (modeActif.value === 'pollen') {
-    currentLayer = L.circle([43.60548, 2.24167], {
-      stroke: false,
-      fillColor: '#fbc02d',
-      fillOpacity: 0.35,
-      radius: 4000 
-    }).addTo(map);
-  } else {
-    currentLayer = L.circle([43.60548, 2.24167], {
-      stroke: false,
-      fillColor: '#4caf50',
-      fillOpacity: 0.35,
-      radius: 5000 
-    }).addTo(map);
-  }
+  const couleurActuelle = modeActif.value === 'pollen' ? envData.value.pollenColor : envData.value.airColor;
+
+  currentLayer = L.circle([userLat, userLon], {
+    stroke: false,
+    fillColor: couleurActuelle,
+    fillOpacity: 0.35,
+    radius: modeActif.value === 'pollen' ? 4000 : 5000 
+  }).addTo(map);
 }
 
 function basculerMode() {
-  if (modeActif.value === 'pollen') {
-    modeActif.value = 'air';
-  } else {
-    modeActif.value = 'pollen';
-  }
+  modeActif.value = modeActif.value === 'pollen' ? 'air' : 'pollen';
   dessinerZone();
 }
 
 onMounted(() => {
-  initialiserCarte();
+  demanderGeolocalisation();
+});
+
+onUnmounted(() => {
+  if (map) {
+    map.remove();
+    map = null;
+  }
 });
 </script>
 
 <style scoped>
 :deep(.leaflet-control-attribution) {
   display: none !important;
-}
-#mapcarto {
-  z-index: 0;
 }
 </style>
