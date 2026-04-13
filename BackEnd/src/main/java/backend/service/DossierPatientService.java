@@ -1,15 +1,16 @@
 package backend.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import backend.dao.DocumentRepository;
+import backend.dao.DossierPatientRepository;
 import backend.entity.Document;
 import backend.entity.DossierPatient;
 import backend.entity.StatutDocument;
 import backend.entity.StatutDossier;
 import backend.exception.ResourceNotFoundException;
-import backend.dao.DocumentRepository;
-import backend.dao.DossierPatientRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class DossierPatientService {
@@ -18,7 +19,7 @@ public class DossierPatientService {
     private final DocumentRepository documentRepository;
 
     public DossierPatientService(DossierPatientRepository dossierPatientRepository,
-                                 DocumentRepository documentRepository) {
+            DocumentRepository documentRepository) {
         this.dossierPatientRepository = dossierPatientRepository;
         this.documentRepository = documentRepository;
     }
@@ -46,5 +47,9 @@ public class DossierPatientService {
         }
 
         dossierPatientRepository.save(dossier);
+    }
+
+    public List<DossierPatient> getAll() {
+        return dossierPatientRepository.findAll();
     }
 }
