@@ -3,6 +3,7 @@ package backend.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "document")
@@ -40,6 +41,7 @@ public class Document {
 
     @ManyToOne
     @JoinColumn(name = "dossier_patient_id", nullable = false)
+    @JsonIgnore // Empêche de remonter vers le dossier lors de la sérialisation du document
     private DossierPatient dossierPatient;
 
     @OneToOne(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -15,15 +15,17 @@ const router = createRouter({
   routes,
 });
 
-// Gardien de navigation (empêche d'accéder aux tableaux de bord sans être connecté)
-router.beforeEach((to, from, next) => {
-  const estConnecte = localStorage.getItem('userRole');
+// Gardien de navigation (Vigile mis à jour pour Vue Router 4)
+router.beforeEach((to, from) => {
+  // On vérifie le "token" (le badge officiel) ou le "role" (comme écrit dans ton LoginView)
+  const estConnecte = localStorage.getItem('token'); 
 
   if (to.name !== 'Login' && !estConnecte) {
-    next({ name: 'Login' });
-  } else {
-    next();
+    // Si pas connecté et qu'on essaie d'aller ailleurs, on renvoie vers le Login
+    return { name: 'Login' };
   }
+  // Sinon, on laisse passer naturellement (plus besoin de next() !)
+  return true;
 });
 
 export default router;
