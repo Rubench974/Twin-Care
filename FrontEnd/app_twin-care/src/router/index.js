@@ -6,6 +6,7 @@ import PageDocuments from '../pages/PageDocuments.vue'
 import PageParcours from '../pages/PageParcours.vue'
 import PageChatbot from '../pages/PageChatbot.vue'
 import PageEnvironnement from '../pages/PageEnvironnement.vue'
+import MesDocuments from '../pages/MesDocuments.vue'
 
 const routes = [
   { path: '/', component: PageConnexion },
@@ -13,7 +14,8 @@ const routes = [
   { path: '/documents', component: PageDocuments },
   { path: '/parcours', component: PageParcours },
   { path: '/chatbot', component: PageChatbot },
-  { path: '/environnement', component: PageEnvironnement }
+  { path: '/environnement', component: PageEnvironnement },
+  { path: '/mes-documents', component: MesDocuments }
 ]
 
 const router = createRouter({
