@@ -1,6 +1,7 @@
 package backend.rest;
 
 import backend.entity.AppUtilisateur;
+import backend.dao.AppUtilisateurRepository;
 import backend.repository.AppUtilisateurRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
