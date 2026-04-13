@@ -32,20 +32,29 @@
             File Active du Cabinet (Dossiers EN_COURS)
           </v-card-title>
           <v-divider></v-divider>
-          <v-table>
+          
+          <div v-if="chargementTableau" class="text-center pa-4">
+            <v-progress-circular indeterminate color="#156500"></v-progress-circular>
+            <p class="mt-2 text-grey">Chargement des patients...</p>
+          </div>
+
+          <v-table v-else>
             <thead class="bg-grey-lighten-4">
               <tr>
                 <th class="font-weight-bold">Patient</th>
-                <th class="font-weight-bold">ID Dossier</th>
-                <th class="font-weight-bold">Heure rdv</th>
+                <th class="font-weight-bold">Email</th>
+                <th class="font-weight-bold">ID Système</th>
                 <th class="text-right font-weight-bold">Actions</th>
               </tr>
             </thead>
             <tbody>
+              <tr v-if="patients.length === 0">
+                <td colspan="4" class="text-center py-4 text-grey">Aucun patient n'est encore enregistré dans la base de données.</td>
+              </tr>
               <tr v-for="patient in patients" :key="patient.id" class="hover-row">
-                <td class="font-weight-medium py-3">{{ patient.nom }}</td>
-                <td><v-chip size="small">Dossier n°{{ patient.dossierId }}</v-chip></td>
-                <td>{{ patient.heure }}</td>
+                <td class="font-weight-medium py-3">{{ patient.nom }} {{ patient.prenom }}</td>
+                <td>{{ patient.email }}</td>
+                <td><v-chip size="small">ID: {{ patient.id }}</v-chip></td>
                 <td class="text-right">
                   <v-btn size="small" color="#156500" class="text-white" prepend-icon="mdi-folder-open" @click="ouvrirDossier(patient)">
                     Gérer Dossier
@@ -90,7 +99,7 @@
       <v-card class="rounded-xl pa-2">
         <v-card-title class="text-h5 font-weight-bold d-flex align-center mt-2" style="color: #156500;">
           <v-icon start color="#156500" class="mr-2">mdi-file-document-multiple</v-icon>
-          Documents de {{ patientSelectionne?.nom }}
+          Documents de {{ patientSelectionne?.nom }} {{ patientSelectionne?.prenom }}
         </v-card-title>
         <v-divider></v-divider>
         
@@ -101,7 +110,7 @@
           </div>
 
           <v-alert v-else-if="documents.length === 0" type="info" variant="tonal">
-            Aucun document trouvé pour le dossier n°{{ patientSelectionne?.dossierId }}.
+            Aucun document trouvé pour ce patient (ID: {{ patientSelectionne?.id }}).
           </v-alert>
 
           <v-list v-else lines="three">
@@ -136,7 +145,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 
@@ -149,6 +158,34 @@ const deconnexion = () => {
   router.push('/login')
 }
 
+// --- VRAIE LISTE DE PATIENTS ---
+const patients = ref([])
+const chargementTableau = ref(false)
+
+// Cette fonction "aspire" les utilisateurs ayant le rôle PATIENT
+const chargerPatients = async () => {
+  chargementTableau.value = true
+  try {
+    // Note pour l'intégration : Adapte l'URL '/api/users' si ton backend utilise '/api/dossiers' ou autre chose.
+    // L'idéal est une route côté Spring Boot qui renvoie : List<Utilisateur> findByRole("PATIENT")
+    const reponse = await api.get('/api/users') 
+    
+    // On filtre pour n'afficher que les patients (pas les autres assistants ou médecins)
+    patients.value = reponse.data.filter(u => u.role === 'PATIENT')
+  } catch (erreur) {
+    console.error("Erreur de récupération des patients. As-tu une route GET /api/users sur ton backend ?", erreur)
+    // En cas d'erreur de route, on vide le tableau pour éviter de bloquer l'interface
+    patients.value = []
+  } finally {
+    chargementTableau.value = false
+  }
+}
+
+// Lancement automatique au chargement de la page
+onMounted(() => {
+  chargerPatients()
+})
+
 // --- LOGIQUE : NOUVEAU PATIENT ---
 const dialogPatient = ref(false)
 const chargementPatient = ref(false)
@@ -160,25 +197,26 @@ const creerPatient = async () => {
   chargementPatient.value = true
   msgCreation.value = ''
   try {
+    // 1. On envoie les infos au serveur (PostgreSQL)
     await api.post('/api/auth/register', nouveau.value)
     typeMsg.value = 'success'
     msgCreation.value = "Patient créé avec succès dans la base !"
-    // On réinitialise le formulaire
+    
+    // 2. On rafraîchit immédiatement le tableau pour le voir apparaître
+    await chargerPatients()
+
+    // 3. On nettoie le formulaire
     nouveau.value = { nom: '', prenom: '', dateNaissance: '', email: '', motDePasse: '', role: 'PATIENT', sexe: null }
     setTimeout(() => { dialogPatient.value = false; msgCreation.value = '' }, 2000)
   } catch (erreur) {
     typeMsg.value = 'error'
-    msgCreation.value = "Erreur de création. Vérifiez les champs."
+    msgCreation.value = "Erreur de création. L'email existe-t-il déjà ?"
   } finally {
     chargementPatient.value = false
   }
 }
 
 // --- LOGIQUE : GESTION DES DOCUMENTS ---
-const patients = ref([
-  { id: 1, nom: "Martin Sophie", dossierId: 1, heure: "09:00" },
-  { id: 2, nom: "Bernard Lucas", dossierId: 2, heure: "09:30" }
-])
 const dialogDossier = ref(false)
 const patientSelectionne = ref(null)
 const documents = ref([])
@@ -197,7 +235,8 @@ const ouvrirDossier = async (patient) => {
   documents.value = []
 
   try {
-    const reponse = await api.get(`/api/documents/dossier/${patient.dossierId}`)
+    // On utilise l'ID du patient récupéré depuis la base de données
+    const reponse = await api.get(`/api/documents/dossier/${patient.id}`)
     documents.value = reponse.data
   } catch (erreur) {
     console.error("Erreur récupération documents:", erreur)
@@ -215,7 +254,7 @@ const validerDocument = async (documentId, decision) => {
     ouvrirDossier(patientSelectionne.value)
   } catch (erreur) {
     console.error("Erreur de validation:", erreur)
-    alert("Erreur lors de la validation. Le backend est-il réveillé ?")
+    alert("Erreur lors de la validation.")
   }
 }
 </script>

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "dossier_patient")
@@ -22,6 +23,7 @@ public class DossierPatient {
 
     @OneToOne
     @JoinColumn(name = "patient_id", nullable = false, unique = true)
+    @JsonIgnore // Empêche de remonter vers l'utilisateur lors de la sérialisation du dossier
     private AppUtilisateur patient;
 
     @OneToMany(mappedBy = "dossierPatient", cascade = CascadeType.ALL, orphanRemoval = true)
