@@ -151,14 +151,13 @@ import api from '../services/api'
 
 const router = useRouter()
 
-// --- LOGIQUE GÉNÉRALE ---
 const deconnexion = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('role')
+  localStorage.removeItem('userId')
   router.push('/login')
 }
 
-// --- VRAIE LISTE DE PATIENTS ---
 const patients = ref([])
 const chargementTableau = ref(false)
 
@@ -179,7 +178,6 @@ onMounted(() => {
   chargerPatients()
 })
 
-// --- LOGIQUE : NOUVEAU PATIENT ---
 const dialogPatient = ref(false)
 const chargementPatient = ref(false)
 const msgCreation = ref('')
@@ -204,7 +202,6 @@ const creerPatient = async () => {
   }
 }
 
-// --- LOGIQUE : GESTION DES DOCUMENTS ---
 const dialogDossier = ref(false)
 const patientSelectionne = ref(null)
 const documents = ref([])
@@ -214,7 +211,7 @@ const dossierId = ref(null)
 const couleurStatut = (statut) => {
   if (statut === 'VALIDE') return 'green'
   if (statut === 'REFUSE') return 'red'
-  return 'orange' 
+  return 'orange'
 }
 
 const ouvrirDossier = async (patient) => {
@@ -238,9 +235,11 @@ const ouvrirDossier = async (patient) => {
 
 const validerDocument = async (documentId, decision) => {
   try {
+    const assistantId = localStorage.getItem('userId')
     await api.post(`/api/validations/document/${documentId}`, {
       decision: decision,
-      commentaire: "Traité par l'assistant(e)"
+      commentaire: "Traité par l'assistant(e)",
+      assistantMedicalId: Number(assistantId)
     })
     const reponse = await api.get(`/api/documents/dossier/${dossierId.value}`)
     documents.value = reponse.data
