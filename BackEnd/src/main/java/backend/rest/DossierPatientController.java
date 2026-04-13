@@ -1,8 +1,14 @@
 package backend.rest;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import backend.entity.DossierPatient;
 import backend.service.DossierPatientService;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/dossiers")
@@ -22,5 +28,10 @@ public class DossierPatientController {
     @GetMapping("/{dossierId}")
     public DossierPatient getById(@PathVariable Long dossierId) {
         return dossierPatientService.getById(dossierId);
+    }
+
+    @GetMapping
+    public List<DossierPatient> getAll() {
+        return dossierPatientService.getAll();
     }
 }
