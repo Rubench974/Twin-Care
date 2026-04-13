@@ -7,6 +7,8 @@ import PageParcours from '../pages/PageParcours.vue'
 import PageChatbot from '../pages/PageChatbot.vue'
 import PageEnvironnement from '../pages/PageEnvironnement.vue'
 import MesDocuments from '../pages/MesDocuments.vue'
+import PageProfil from '../pages/PageProfil.vue'
+import PageConfidentialite from '../pages/PageConfidentialite.vue'
 
 const routes = [
   { path: '/', component: PageConnexion },
@@ -15,7 +17,9 @@ const routes = [
   { path: '/parcours', component: PageParcours },
   { path: '/chatbot', component: PageChatbot },
   { path: '/environnement', component: PageEnvironnement },
-  { path: '/mes-documents', component: MesDocuments }
+  { path: '/mes-documents', component: MesDocuments },
+  { path: '/profil', component: PageProfil },
+  { path: '/confidentialite', component: PageConfidentialite }
 ]
 
 const router = createRouter({

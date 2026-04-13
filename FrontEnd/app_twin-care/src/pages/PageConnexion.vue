@@ -107,6 +107,15 @@ function seConnecter() {
       localStorage.setItem('token', dataJSON.token);
       localStorage.setItem('role', dataJSON.role);
       
+      if (dataJSON.prenom) {
+        localStorage.setItem('prenom', dataJSON.prenom);
+      }
+      if (dataJSON.nom) {
+        localStorage.setItem('nom', dataJSON.nom);
+      }
+      if (dataJSON.email) {
+        localStorage.setItem('email', dataJSON.email);
+      }
       if (dataJSON.patientId) {
         localStorage.setItem('patientId', dataJSON.patientId);
       }
