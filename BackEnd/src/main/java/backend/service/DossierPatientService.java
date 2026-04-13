@@ -17,15 +17,20 @@ public class DossierPatientService {
     private final DossierPatientRepository dossierPatientRepository;
     private final DocumentRepository documentRepository;
 
+    private final SecurityHelperService securityHelperService;
+
     public DossierPatientService(DossierPatientRepository dossierPatientRepository,
-                                 DocumentRepository documentRepository) {
+                                 DocumentRepository documentRepository,
+                                 SecurityHelperService securityHelperService) {
         this.dossierPatientRepository = dossierPatientRepository;
         this.documentRepository = documentRepository;
+        this.securityHelperService = securityHelperService;
     }
 
     public DossierPatient getByPatientId(Long patientId) {
+        securityHelperService.checkPatientAccess(patientId);
         return dossierPatientRepository.findByPatientId(patientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Dossier patient introuvable"));
+            .orElseThrow(() -> new ResourceNotFoundException("Dossier patient introuvable"));
     }
 
     public DossierPatient getById(Long dossierId) {
