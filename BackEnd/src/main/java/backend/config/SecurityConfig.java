@@ -39,12 +39,31 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/test", "/h2-console/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/dossiers/**").hasAnyRole("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
-                        .requestMatchers("/api/documents/**").hasAnyRole("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
-                        .requestMatchers("/api/files/**").hasAnyRole("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
-                        .requestMatchers("/api/validations/**").hasAnyRole("ASSISTANT_MEDICAL", "MEDECIN")
-                        .requestMatchers("/api/chatbot/**").hasRole("PATIENT")
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        .requestMatchers("/api/dossiers/**")
+                        .hasAnyAuthority("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
+
+                        .requestMatchers("/api/documents/**")
+                        .hasAnyAuthority("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
+
+                        .requestMatchers("/api/files/**")
+                        .hasAnyAuthority("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
+
+                        .requestMatchers("/api/validations/**")
+                        .hasAnyAuthority("ASSISTANT_MEDICAL", "MEDECIN")
+
+                        .requestMatchers("/api/chatbot/**")
+                        .hasAnyAuthority("PATIENT")
+
+                        .requestMatchers("/api/parcours/**")
+                        .hasAnyAuthority("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
+
+                        .requestMatchers("/api/environnement/**")
+                        .hasAnyAuthority("PATIENT")
+
+                        .requestMatchers("/api/admin/**")
+                        .hasAnyAuthority("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userService);

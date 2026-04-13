@@ -27,7 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new UtilisateurSecurite(
                 user.getEmail(),
                 user.getMotDePasse(),
-                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                List.of(new SimpleGrantedAuthority(user.getRole().name()))
         );
     }
 }
