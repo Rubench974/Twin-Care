@@ -1,13 +1,13 @@
 package backend.rest;
 
-import backend.entity.AppUtilisateur;
-import backend.dao.AppUtilisateurRepository;
-import backend.repository.AppUtilisateurRepository;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import backend.dao.AppUtilisateurRepository;
+import backend.entity.AppUtilisateur;
 
 @RestController
 @RequestMapping("/api/users")
