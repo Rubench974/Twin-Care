@@ -127,7 +127,6 @@
               </v-card-title>
               <v-divider></v-divider>
               
-              <!-- Aperçu du fichier -->
               <v-card-text class="pa-4" v-if="doc.nomFichier">
                 <div v-if="estImage(doc.nomFichier)" class="text-center mb-3">
                   <v-img :src="urlFichier(doc.nomFichier)" max-height="300" contain class="rounded-lg border"></v-img>
@@ -141,7 +140,6 @@
                 </div>
               </v-card-text>
 
-              <!-- Actions -->
               <v-card-actions class="px-4 pb-3">
                 <template v-if="doc.statut === 'EN_ATTENTE'">
                   <v-btn size="small" color="success" prepend-icon="mdi-check" @click="validerDocument(doc.id, 'VALIDER')">Valider</v-btn>
