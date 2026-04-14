@@ -9,28 +9,18 @@
       <div style="width: 48px;"></div>
     </div>
 
-    <div class="w-100 px-5 mb-6" style="max-width: 380px;">
-      <v-card color="white" class="pa-5 rounded-xl text-center" elevation="2">
-        <span class="text-body-1 font-weight-medium" style="color: #37474F; line-height: 1.4;">
-          J'envoie des documents à mon praticien pour compléter mon dossier !
-        </span>
-      </v-card>
-      <div style="width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 15px solid white; margin-left: 65%; filter: drop-shadow(0px 3px 2px rgba(0,0,0,0.05));"></div>
-    </div>
-
-    <v-row class="w-100 px-6 mt-2" style="max-width: 380px;" justify="center">
+    <v-row class="w-100 px-6 mt-4" style="max-width: 380px;" justify="center">
       
-      <v-col cols="12" class="pb-6">
+      <v-col cols="12" class="pb-8">
         <v-card
           @click="actionUpload('camera')"
-          class="d-flex flex-column align-center justify-center py-6"
+          class="d-flex flex-column align-center justify-center pa-0"
           elevation="0"
           color="transparent"
           v-ripple
-          style="border: 2px dashed #2A93D5; border-radius: 24px; cursor: pointer; background-color: rgba(255, 255, 255, 0.6) !important;"
+          style="cursor: pointer;"
         >
-          <v-icon size="40" color="#2A93D5" class="mb-2">mdi-camera-outline</v-icon>
-          <span class="font-weight-bold" style="color: #2c3e50; font-size: 1.05rem;">Prendre une photo</span>
+          <img :src="imageCamera" style="width: 100%; max-width: 300px; object-fit: contain;" />
         </v-card>
       </v-col>
 
@@ -87,6 +77,7 @@
 
 <script setup>
 import { ref, inject } from 'vue'
+import imageCamera from '../assets/camera.png'
 
 const toggleDrawer = inject('toggleDrawer')
 
