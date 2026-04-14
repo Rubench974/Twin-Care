@@ -32,7 +32,7 @@
         <v-card class="rounded-xl elevation-3">
           <v-card-title class="bg-white pa-4 font-weight-bold d-flex align-center" style="color: #37474F;">
             <v-icon start color="#156500" class="mr-2">mdi-clipboard-list</v-icon>
-            File Active du Cabinet (Dossiers EN_COURS)
+            File active du cabinet
           </v-card-title>
           <v-divider></v-divider>
           
@@ -132,8 +132,7 @@
               
               <v-card-text class="pa-4" v-if="doc.cheminFichier">
                 <div v-if="estImage(doc.cheminFichier)" class="text-center mb-3">
-                  <img :src="urlFichier(doc.cheminFichier)" style="max-height: 300px; max-width: 100%; border-radius: 8px; border: 1px solid #ccc;" />
-                  <div class="mt-2">
+                  <img :src="urlFichier(doc.cheminFichier)" crossorigin="anonymous" style="max-height: 300px; max-width: 100%; border-radius: 8px; border: 1px solid #ccc;" />
                     <v-btn size="small" color="blue" variant="tonal" :href="urlFichier(doc.cheminFichier)" target="_blank" prepend-icon="mdi-eye">Ouvrir en grand</v-btn>
                   </div>
                 </div>
