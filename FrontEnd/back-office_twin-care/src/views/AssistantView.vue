@@ -56,8 +56,11 @@
                 <td>{{ patient.email }}</td>
                 <td><v-chip size="small">ID: {{ patient.id }}</v-chip></td>
                 <td class="text-right">
-                  <v-btn size="small" color="#156500" class="text-white" prepend-icon="mdi-folder-open" @click="ouvrirDossier(patient)">
+                  <v-btn size="small" color="#156500" class="text-white mr-2" prepend-icon="mdi-folder-open" @click="ouvrirDossier(patient)">
                     Gérer Dossier
+                  </v-btn>
+                  <v-btn size="small" color="red" variant="tonal" prepend-icon="mdi-account-remove" @click="supprimerPatient(patient)">
+                    Supprimer
                   </v-btn>
                 </td>
               </tr>
@@ -95,7 +98,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="dialogDossier" max-width="800px">
+    <v-dialog v-model="dialogDossier" max-width="900px" scrollable>
       <v-card class="rounded-xl pa-2">
         <v-card-title class="text-h5 font-weight-bold d-flex align-center mt-2" style="color: #156500;">
           <v-icon start color="#156500" class="mr-2">mdi-file-document-multiple</v-icon>
@@ -103,7 +106,7 @@
         </v-card-title>
         <v-divider></v-divider>
         
-        <v-card-text>
+        <v-card-text style="max-height: 70vh; overflow-y: auto;">
           <div v-if="chargementDocs" class="text-center pa-6">
             <v-progress-circular indeterminate color="#156500"></v-progress-circular>
             <p class="mt-2">Recherche des documents sur le serveur...</p>
@@ -113,29 +116,42 @@
             Aucun document trouvé pour ce patient.
           </v-alert>
 
-          <v-list v-else lines="three">
-            <v-list-item v-for="doc in documents" :key="doc.id" class="border mb-2 rounded-lg">
-              <template v-slot:prepend>
-                <v-avatar color="blue-lighten-4"><v-icon color="blue">mdi-file-pdf-box</v-icon></v-avatar>
-              </template>
-              <v-list-item-title class="font-weight-bold">Type : {{ doc.type || 'Non spécifié' }}</v-list-item-title>
-              <v-list-item-subtitle>
-                Ajouté le: {{ doc.dateDocument || 'Date inconnue' }}<br>
-                Statut actuel: 
-                <v-chip size="x-small" :color="couleurStatut(doc.statut)">{{ doc.statut }}</v-chip>
-              </v-list-item-subtitle>
+          <div v-else>
+            <v-card v-for="doc in documents" :key="doc.id" class="mb-4 rounded-lg elevation-1" variant="outlined">
+              <v-card-title class="d-flex align-center py-2">
+                <v-icon color="blue" class="mr-2">mdi-file-document</v-icon>
+                <span class="font-weight-bold">{{ doc.type || 'Non spécifié' }}</span>
+                <v-chip size="x-small" :color="couleurStatut(doc.statut)" class="ml-2">{{ doc.statut }}</v-chip>
+                <v-spacer></v-spacer>
+                <span class="text-caption text-grey">{{ doc.dateDocument }}</span>
+              </v-card-title>
+              <v-divider></v-divider>
               
-              <template v-slot:append>
-                <div class="d-flex flex-column gap-1">
-                  <template v-if="doc.statut === 'EN_ATTENTE'">
-                    <v-btn size="small" color="success" prepend-icon="mdi-check" @click="validerDocument(doc.id, 'VALIDER')" class="mb-1">Valider</v-btn>
-                    <v-btn size="small" color="error" prepend-icon="mdi-close" @click="validerDocument(doc.id, 'REFUSER')" class="mb-1">Refuser</v-btn>
-                  </template>
-                  <v-btn size="small" color="grey-darken-1" variant="tonal" prepend-icon="mdi-delete" @click="supprimerDocument(doc.id)">Supprimer</v-btn>
+              <!-- Aperçu du fichier -->
+              <v-card-text class="pa-4" v-if="doc.nomFichier">
+                <div v-if="estImage(doc.nomFichier)" class="text-center mb-3">
+                  <v-img :src="urlFichier(doc.nomFichier)" max-height="300" contain class="rounded-lg border"></v-img>
                 </div>
-              </template>
-            </v-list-item>
-          </v-list>
+                <div v-else class="d-flex align-center mb-3">
+                  <v-icon size="30" color="red" class="mr-2">mdi-file-pdf-box</v-icon>
+                  <span>{{ doc.nomFichier }}</span>
+                  <v-btn size="small" color="blue" variant="tonal" class="ml-3" :href="urlFichier(doc.nomFichier)" target="_blank" prepend-icon="mdi-eye">
+                    Ouvrir
+                  </v-btn>
+                </div>
+              </v-card-text>
+
+              <!-- Actions -->
+              <v-card-actions class="px-4 pb-3">
+                <template v-if="doc.statut === 'EN_ATTENTE'">
+                  <v-btn size="small" color="success" prepend-icon="mdi-check" @click="validerDocument(doc.id, 'VALIDER')">Valider</v-btn>
+                  <v-btn size="small" color="error" prepend-icon="mdi-close" @click="validerDocument(doc.id, 'REFUSER')">Refuser</v-btn>
+                </template>
+                <v-spacer></v-spacer>
+                <v-btn size="small" color="grey-darken-1" variant="tonal" prepend-icon="mdi-delete" @click="supprimerDocument(doc.id)">Supprimer</v-btn>
+              </v-card-actions>
+            </v-card>
+          </div>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -153,12 +169,23 @@ import { useRouter } from 'vue-router'
 import api from '../services/api'
 
 const router = useRouter()
+const BASE_URL = 'https://twincare-t2xu.onrender.com'
 
 const deconnexion = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('role')
   localStorage.removeItem('userId')
   router.push('/login')
+}
+
+const estImage = (nomFichier) => {
+  if (!nomFichier) return false
+  const ext = nomFichier.toLowerCase()
+  return ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.gif') || ext.endsWith('.webp')
+}
+
+const urlFichier = (nomFichier) => {
+  return `${BASE_URL}/api/files/${nomFichier}`
 }
 
 const patients = ref([])
@@ -202,6 +229,17 @@ const creerPatient = async () => {
     msgCreation.value = "Erreur de création. L'email existe-t-il déjà ?"
   } finally {
     chargementPatient.value = false
+  }
+}
+
+const supprimerPatient = async (patient) => {
+  if (!confirm(`Voulez-vous vraiment supprimer le patient ${patient.nom} ${patient.prenom} ? Cette action est irréversible.`)) return
+  try {
+    await api.delete(`/api/users/${patient.id}`)
+    await chargerPatients()
+  } catch (erreur) {
+    console.error("Erreur suppression patient:", erreur)
+    alert("Erreur lors de la suppression du patient.")
   }
 }
 

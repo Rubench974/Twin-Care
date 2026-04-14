@@ -40,6 +40,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/test", "/h2-console/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/files/**").permitAll()
+
+                        .requestMatchers("/api/users/**")
+                        .hasAnyAuthority("ASSISTANT_MEDICAL", "MEDECIN")
 
                         .requestMatchers("/api/dossiers/**")
                         .hasAnyAuthority("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
@@ -47,9 +51,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/documents/**")
                         .hasAnyAuthority("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
 
-                        .requestMatchers("/api/files/**").permitAll()
-
                         .requestMatchers("/api/validations/**")
+                        .hasAnyAuthority("ASSISTANT_MEDICAL", "MEDECIN")
+
+                        .requestMatchers("/api/interactions/**")
                         .hasAnyAuthority("ASSISTANT_MEDICAL", "MEDECIN")
 
                         .requestMatchers("/api/chatbot/**")
