@@ -28,11 +28,10 @@ public class DocumentService {
     private final DossierPatientService dossierPatientService;
 
     public DocumentService(DocumentRepository documentRepository,
-                           DossierPatientRepository dossierPatientRepository,
-                           FileStorageService fileStorageService,
-                           DossierPatientService dossierPatientService) {
-        this.documentRepository =document.setCheminFichier("uploads/" + storedFilename);
-        documentRepository;
+            DossierPatientRepository dossierPatientRepository,
+            FileStorageService fileStorageService,
+            DossierPatientService dossierPatientService) {
+        this.documentRepository = documentRepository;
         this.dossierPatientRepository = dossierPatientRepository;
         this.fileStorageService = fileStorageService;
         this.dossierPatientService = dossierPatientService;
