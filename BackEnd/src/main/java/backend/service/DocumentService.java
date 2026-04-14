@@ -31,7 +31,8 @@ public class DocumentService {
                            DossierPatientRepository dossierPatientRepository,
                            FileStorageService fileStorageService,
                            DossierPatientService dossierPatientService) {
-        this.documentRepository = documentRepository;
+        this.documentRepository =document.setCheminFichier("uploads/" + storedFilename);
+        documentRepository;
         this.dossierPatientRepository = dossierPatientRepository;
         this.fileStorageService = fileStorageService;
         this.dossierPatientService = dossierPatientService;
@@ -39,8 +40,8 @@ public class DocumentService {
 
     @Transactional
     public Document uploadDocument(Long dossierId,
-                                   MultipartFile file,
-                                   DocumentUploadRequest request) {
+            MultipartFile file,
+            DocumentUploadRequest request) {
 
         DossierPatient dossier = dossierPatientRepository.findById(dossierId)
                 .orElseThrow(() -> new ResourceNotFoundException("Dossier introuvable"));
@@ -63,7 +64,7 @@ public class DocumentService {
         document.setType(request.getType());
         document.setDateDocument(request.getDateDocument());
         document.setNomFichier(file.getOriginalFilename());
-        document.setCheminFichier("uploads/" + storedFilename);
+        document.setCheminFichier(storedFilename);
         document.setPrescripteur(request.getPrescripteur());
         document.setCommentairePatient(request.getCommentairePatient());
         document.setStatut(StatutDocument.EN_ATTENTE);
