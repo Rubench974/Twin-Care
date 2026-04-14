@@ -88,6 +88,7 @@ public class SecurityConfig {
                 "http://192.168.1.118:3000",
                 "http://localhost:5173",
                 "https://twincare-t2xu.onrender.com",
+                "https://twin-care-patient.onrender.com",
                 "https://twincare-backoffice.onrender.com"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
