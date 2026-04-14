@@ -32,17 +32,24 @@ public class FileController {
             }
 
             String contentType = "application/octet-stream";
-            if (filename.endsWith(".png"))
+            boolean isImage = false;
+            if (filename.endsWith(".png")) {
                 contentType = "image/png";
-            else if (filename.endsWith(".jpg") || filename.endsWith(".jpeg"))
+                isImage = true;
+            } else if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) {
                 contentType = "image/jpeg";
-            else if (filename.endsWith(".pdf"))
+                isImage = true;
+            } else if (filename.endsWith(".pdf"))
                 contentType = "application/pdf";
 
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                    .body(resource);
+            var builder = ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType));
+
+            if (!isImage) {
+                builder.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+            }
+
+            return builder.body(resource);
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
