@@ -15,11 +15,14 @@
     <v-main>
       <v-container fluid class="pa-6">
         <v-row class="mb-6 align-center">
-          <v-col cols="12" md="8">
+          <v-col cols="12" md="5">
             <h1 class="text-h4 font-weight-bold" style="color: #37474F;">Tableau de Bord</h1>
             <p class="text-subtitle-1 text-grey-darken-2">Gestion des flux et des documents</p>
           </v-col>
-          <v-col cols="12" md="4" class="text-right">
+          <v-col cols="12" md="4">
+            <v-text-field v-model="recherche" label="Rechercher un patient..." prepend-inner-icon="mdi-magnify" variant="outlined" density="compact" clearable hide-details></v-text-field>
+          </v-col>
+          <v-col cols="12" md="3" class="text-right">
             <v-btn size="large" color="#156500" class="text-white font-weight-bold" prepend-icon="mdi-account-plus" @click="dialogPatient = true">
               Nouveau Patient
             </v-btn>
@@ -48,10 +51,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-if="patients.length === 0">
-                <td colspan="4" class="text-center py-4 text-grey">Aucun patient n'est encore enregistré dans la base de données.</td>
+              <tr v-if="patientsFiltres.length === 0">
+                <td colspan="4" class="text-center py-4 text-grey">Aucun patient trouvé.</td>
               </tr>
-              <tr v-for="patient in patients" :key="patient.id" class="hover-row">
+              <tr v-for="patient in patientsFiltres" :key="patient.id" class="hover-row">
                 <td class="font-weight-medium py-3">{{ patient.nom }} {{ patient.prenom }}</td>
                 <td>{{ patient.email }}</td>
                 <td><v-chip size="small">ID: {{ patient.id }}</v-chip></td>
@@ -162,7 +165,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 
@@ -188,8 +191,17 @@ const urlFichier = (cheminFichier) => {
   return `${BASE_URL}/api/files/${filename}`
 }
 
+const recherche = ref('')
 const patients = ref([])
 const chargementTableau = ref(false)
+
+const patientsFiltres = computed(() => {
+  if (!recherche.value) return patients.value
+  const q = recherche.value.toLowerCase()
+  return patients.value.filter(p =>
+    `${p.nom} ${p.prenom}`.toLowerCase().includes(q) || p.email.toLowerCase().includes(q)
+  )
+})
 
 const chargerPatients = async () => {
   chargementTableau.value = true

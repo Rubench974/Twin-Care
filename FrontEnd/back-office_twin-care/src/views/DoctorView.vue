@@ -15,9 +15,12 @@
     <v-main>
       <v-container fluid class="pa-6">
         <v-row class="mb-4">
-          <v-col cols="12">
+          <v-col cols="12" md="8">
             <h1 class="text-h4 font-weight-bold" style="color: #37474F;">Salle d'attente virtuelle</h1>
             <p class="text-subtitle-1 text-grey-darken-1">Dossiers dont tous les documents ont été validés par l'assistant(e)</p>
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-text-field v-model="recherche" label="Rechercher un patient..." prepend-inner-icon="mdi-magnify" variant="outlined" density="compact" clearable hide-details></v-text-field>
           </v-col>
         </v-row>
 
@@ -26,12 +29,12 @@
           <p class="mt-3 text-grey">Chargement des dossiers...</p>
         </div>
 
-        <v-alert v-else-if="dossiersPrets.length === 0" type="info" variant="tonal" class="mb-4">
+        <v-alert v-else-if="dossiersFiltres.length === 0" type="info" variant="tonal" class="mb-4">
           Aucun dossier prêt pour consultation pour le moment.
         </v-alert>
 
         <v-row v-else>
-          <v-col cols="12" md="4" v-for="dossier in dossiersPrets" :key="dossier.id">
+          <v-col cols="12" md="4" v-for="dossier in dossiersFiltres" :key="dossier.id">
             <v-card class="rounded-xl elevation-3 border-t-lg" style="border-top: 4px solid #156500; height: 100%;">
               <v-card-title class="d-flex justify-space-between align-start pt-4 px-4 pb-0">
                 <div>
@@ -55,10 +58,13 @@
               <v-divider></v-divider>
 
               <v-card-actions class="px-4 py-3 bg-grey-lighten-4">
+                <v-btn size="small" color="red" variant="tonal" prepend-icon="mdi-account-remove" @click="supprimerPatient(dossier)">
+                  Supprimer
+                </v-btn>
                 <v-spacer></v-spacer>
                 <v-btn color="#156500" variant="elevated" class="text-white px-4 font-weight-bold rounded-lg"
                        prepend-icon="mdi-folder-account" @click="ouvrirConsultation(dossier)">
-                  Consulter le dossier
+                  Consulter
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -154,7 +160,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 
@@ -180,8 +186,15 @@ const urlFichier = (cheminFichier) => {
   return `${BASE_URL}/api/files/${filename}`
 }
 
+const recherche = ref('')
 const dossiersPrets = ref([])
 const chargement = ref(false)
+
+const dossiersFiltres = computed(() => {
+  if (!recherche.value) return dossiersPrets.value
+  const q = recherche.value.toLowerCase()
+  return dossiersPrets.value.filter(d => d.patientNom.toLowerCase().includes(q))
+})
 
 const chargerDossiers = async () => {
   chargement.value = true
@@ -193,9 +206,11 @@ const chargerDossiers = async () => {
       tousDossiers.map(async (dossier) => {
         let nbDocuments = 0
         let patientNom = 'Patient inconnu'
+        let patientId = null
 
         if (dossier.patient) {
           patientNom = `${dossier.patient.nom} ${dossier.patient.prenom}`
+          patientId = dossier.patient.id
         }
 
         try {
@@ -210,6 +225,7 @@ const chargerDossiers = async () => {
         return {
           ...dossier,
           patientNom,
+          patientId,
           nbDocuments
         }
       })
@@ -226,6 +242,21 @@ const chargerDossiers = async () => {
 onMounted(() => {
   chargerDossiers()
 })
+
+const supprimerPatient = async (dossier) => {
+  if (!dossier.patientId) {
+    alert("Impossible de trouver l'ID du patient.")
+    return
+  }
+  if (!confirm(`Voulez-vous vraiment supprimer le patient ${dossier.patientNom} ? Cette action est irréversible.`)) return
+  try {
+    await api.delete(`/api/users/${dossier.patientId}`)
+    await chargerDossiers()
+  } catch (erreur) {
+    console.error("Erreur suppression patient:", erreur)
+    alert("Erreur lors de la suppression du patient.")
+  }
+}
 
 const dialogConsultation = ref(false)
 const consultationDossier = ref(null)
