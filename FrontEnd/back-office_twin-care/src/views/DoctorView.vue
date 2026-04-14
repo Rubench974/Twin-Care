@@ -127,14 +127,14 @@
               </v-card-title>
               <v-divider></v-divider>
               <v-card-text class="pa-4">
-                <div v-if="estImage(doc.nomFichier)" class="text-center">
-                  <v-img :src="urlFichier(doc.nomFichier)" max-height="400" contain class="rounded-lg border"></v-img>
+                <div v-if="estImage(doc.cheminFichier)" class="text-center">
+                  <v-img :src="urlFichier(doc.cheminFichier)" max-height="400" contain class="rounded-lg border"></v-img>
                 </div>
                 <div v-else class="d-flex align-center justify-center pa-4">
                   <v-icon size="40" color="red" class="mr-3">mdi-file-pdf-box</v-icon>
                   <div>
                     <p class="font-weight-bold mb-1">{{ doc.nomFichier }}</p>
-                    <v-btn size="small" color="blue" variant="tonal" :href="urlFichier(doc.nomFichier)" target="_blank" prepend-icon="mdi-download">
+                    <v-btn size="small" color="blue" variant="tonal" :href="urlFichier(doc.cheminFichier)" target="_blank" prepend-icon="mdi-download">
                       Télécharger / Ouvrir
                     </v-btn>
                   </div>
@@ -168,14 +168,16 @@ const deconnexion = () => {
   router.push('/login')
 }
 
-const estImage = (nomFichier) => {
-  if (!nomFichier) return false
-  const ext = nomFichier.toLowerCase()
+const estImage = (cheminFichier) => {
+  if (!cheminFichier) return false
+  const ext = cheminFichier.toLowerCase()
   return ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.gif') || ext.endsWith('.webp')
 }
 
-const urlFichier = (nomFichier) => {
-  return `${BASE_URL}/api/files/${nomFichier}`
+const urlFichier = (cheminFichier) => {
+  if (!cheminFichier) return ''
+  const filename = cheminFichier.split('/').pop()
+  return `${BASE_URL}/api/files/${filename}`
 }
 
 const dossiersPrets = ref([])
@@ -192,7 +194,6 @@ const chargerDossiers = async () => {
         let nbDocuments = 0
         let patientNom = 'Patient inconnu'
 
-        // Récupérer le nom du patient depuis le dossier lui-même
         if (dossier.patient) {
           patientNom = `${dossier.patient.nom} ${dossier.patient.prenom}`
         }

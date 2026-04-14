@@ -127,14 +127,14 @@
               </v-card-title>
               <v-divider></v-divider>
               
-              <v-card-text class="pa-4" v-if="doc.nomFichier">
-                <div v-if="estImage(doc.nomFichier)" class="text-center mb-3">
-                  <v-img :src="urlFichier(doc.nomFichier)" max-height="300" contain class="rounded-lg border"></v-img>
+              <v-card-text class="pa-4" v-if="doc.cheminFichier">
+                <div v-if="estImage(doc.cheminFichier)" class="text-center mb-3">
+                  <v-img :src="urlFichier(doc.cheminFichier)" max-height="300" contain class="rounded-lg border"></v-img>
                 </div>
                 <div v-else class="d-flex align-center mb-3">
                   <v-icon size="30" color="red" class="mr-2">mdi-file-pdf-box</v-icon>
                   <span>{{ doc.nomFichier }}</span>
-                  <v-btn size="small" color="blue" variant="tonal" class="ml-3" :href="urlFichier(doc.nomFichier)" target="_blank" prepend-icon="mdi-eye">
+                  <v-btn size="small" color="blue" variant="tonal" class="ml-3" :href="urlFichier(doc.cheminFichier)" target="_blank" prepend-icon="mdi-eye">
                     Ouvrir
                   </v-btn>
                 </div>
@@ -176,14 +176,16 @@ const deconnexion = () => {
   router.push('/login')
 }
 
-const estImage = (nomFichier) => {
-  if (!nomFichier) return false
-  const ext = nomFichier.toLowerCase()
+const estImage = (cheminFichier) => {
+  if (!cheminFichier) return false
+  const ext = cheminFichier.toLowerCase()
   return ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.gif') || ext.endsWith('.webp')
 }
 
-const urlFichier = (nomFichier) => {
-  return `${BASE_URL}/api/files/${nomFichier}`
+const urlFichier = (cheminFichier) => {
+  if (!cheminFichier) return ''
+  const filename = cheminFichier.split('/').pop()
+  return `${BASE_URL}/api/files/${filename}`
 }
 
 const patients = ref([])
