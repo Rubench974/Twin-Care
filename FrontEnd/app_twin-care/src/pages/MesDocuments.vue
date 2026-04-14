@@ -36,6 +36,7 @@
             </v-list-item-subtitle>
 
             <template v-slot:append>
+              <v-btn icon="mdi-eye-outline" variant="text" color="#2A93D5" class="mr-2" @click="ouvrirDocument(doc)"></v-btn>
               <v-btn icon="mdi-delete-outline" variant="text" color="#E53935" @click="confirmerSuppression(doc.id)"></v-btn>
             </template>
           </v-list-item>
@@ -85,7 +86,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-const url = "https://twincare-t2xu.onrender.com/api/documents"
+const BASE_URL = "https://twincare-t2xu.onrender.com"
+const url = `${BASE_URL}/api/documents`
 
 const documents = ref([])
 const isLoading = ref(true)
@@ -131,6 +133,16 @@ function chargerDocuments() {
   .finally(() => {
     isLoading.value = false
   })
+}
+
+function ouvrirDocument(doc) {
+  if (!doc.cheminFichier) {
+    afficherNotification("Aucun fichier associé à ce document.", "#E53935", "mdi-alert-circle")
+    return
+  }
+  const filename = doc.cheminFichier.split('/').pop()
+  const fileUrl = `${BASE_URL}/api/files/${filename}`
+  window.open(fileUrl, '_blank')
 }
 
 function formaterDate(dateString) {
