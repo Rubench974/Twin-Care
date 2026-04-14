@@ -68,7 +68,7 @@
     </v-main>
 
     <!-- Dialog consultation détaillée -->
-    <v-dialog v-model="dialogConsultation" max-width="900px">
+    <v-dialog v-model="dialogConsultation" max-width="900px" scrollable>
       <v-card class="rounded-xl pa-2">
         <v-card-title class="text-h5 font-weight-bold d-flex align-center mt-2" style="color: #156500;">
           <v-icon start color="#156500" class="mr-2">mdi-folder-account</v-icon>
@@ -76,7 +76,7 @@
         </v-card-title>
         <v-divider></v-divider>
 
-        <v-card-text>
+        <v-card-text style="max-height: 70vh; overflow-y: auto;">
           <!-- Section Chatbot -->
           <h3 class="text-h6 font-weight-bold mb-3 mt-2" style="color: #37474F;">
             <v-icon start color="blue" class="mr-1">mdi-chat</v-icon> Réponses du Chatbot (Anamnèse)
@@ -118,20 +118,40 @@
           <v-alert v-else-if="documentsValides.length === 0" type="info" variant="tonal" density="compact">
             Aucun document validé trouvé.
           </v-alert>
-          <v-list v-else lines="two">
-            <v-list-item v-for="doc in documentsValides" :key="doc.id" class="border mb-2 rounded-lg">
-              <template v-slot:prepend>
-                <v-avatar color="orange-lighten-4">
-                  <v-icon color="orange-darken-2">mdi-file-pdf-box</v-icon>
-                </v-avatar>
-              </template>
-              <v-list-item-title class="font-weight-bold">{{ doc.type }}</v-list-item-title>
-              <v-list-item-subtitle>
-                {{ doc.nomFichier }} — {{ doc.dateDocument }}
+
+          <div v-else>
+            <v-card v-for="doc in documentsValides" :key="doc.id" class="mb-4 rounded-lg elevation-1" variant="outlined">
+              <v-card-title class="d-flex align-center py-2">
+                <v-icon color="orange-darken-2" class="mr-2">mdi-file-document</v-icon>
+                <span class="font-weight-bold">{{ doc.type }}</span>
                 <v-chip size="x-small" color="green" class="ml-2">VALIDÉ</v-chip>
-              </v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
+                <v-spacer></v-spacer>
+                <span class="text-caption text-grey">{{ doc.dateDocument }}</span>
+              </v-card-title>
+              <v-divider></v-divider>
+              <v-card-text class="pa-4">
+                <!-- Si c'est une image -->
+                <div v-if="estImage(doc.nomFichier)" class="text-center">
+                  <v-img
+                    :src="urlFichier(doc.nomFichier)"
+                    max-height="400"
+                    contain
+                    class="rounded-lg border"
+                  ></v-img>
+                </div>
+                <!-- Si c'est un PDF ou autre -->
+                <div v-else class="d-flex align-center justify-center pa-4">
+                  <v-icon size="40" color="red" class="mr-3">mdi-file-pdf-box</v-icon>
+                  <div>
+                    <p class="font-weight-bold mb-1">{{ doc.nomFichier }}</p>
+                    <v-btn size="small" color="blue" variant="tonal" :href="urlFichier(doc.nomFichier)" target="_blank" prepend-icon="mdi-download">
+                      Télécharger / Ouvrir
+                    </v-btn>
+                  </div>
+                </div>
+              </v-card-text>
+            </v-card>
+          </div>
         </v-card-text>
 
         <v-card-actions>
@@ -149,11 +169,25 @@ import { useRouter } from 'vue-router'
 import api from '../services/api'
 
 const router = useRouter()
+const BASE_URL = 'https://twincare-t2xu.onrender.com'
 
 const deconnexion = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('role')
+  localStorage.removeItem('userId')
   router.push('/login')
+}
+
+// --- Utilitaires fichiers ---
+const estImage = (nomFichier) => {
+  if (!nomFichier) return false
+  const ext = nomFichier.toLowerCase()
+  return ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.gif') || ext.endsWith('.webp')
+}
+
+const urlFichier = (nomFichier) => {
+  const token = localStorage.getItem('token')
+  return `${BASE_URL}/api/files/${nomFichier}?token=${token}`
 }
 
 // --- Chargement des dossiers prêts ---
@@ -166,10 +200,8 @@ const chargerDossiers = async () => {
     const reponse = await api.get('/api/dossiers')
     const tousDossiers = reponse.data
 
-    // On récupère les infos patient pour chaque dossier
     const dossiersAvecPatient = await Promise.all(
       tousDossiers.map(async (dossier) => {
-        // Compter les documents validés
         let nbDocuments = 0
         let patientNom = 'Patient inconnu'
 
@@ -177,18 +209,14 @@ const chargerDossiers = async () => {
           const docsReponse = await api.get(`/api/documents/dossier/${dossier.id}`)
           const docsValides = docsReponse.data.filter(d => d.statut === 'VALIDE')
           nbDocuments = docsValides.length
-
-          // On ne garde que les dossiers qui ont au moins 1 document validé
           if (nbDocuments === 0) return null
         } catch (e) {
           return null
         }
 
-        // Récupérer le nom du patient via la liste des users
         try {
           const usersReponse = await api.get('/api/users')
           const patients = usersReponse.data.filter(u => u.role === 'PATIENT')
-          // Le dossier est lié au patient par l'ID
           const patient = patients.find(p => p.dossierId === dossier.id || p.id === dossier.id)
           if (patient) {
             patientNom = `${patient.nom} ${patient.prenom}`
@@ -231,7 +259,6 @@ const ouvrirConsultation = async (dossier) => {
   interactions.value = []
   documentsValides.value = []
 
-  // Charger les interactions chatbot
   chargementInteractions.value = true
   try {
     const reponse = await api.get(`/api/interactions/dossier/${dossier.id}`)
@@ -242,7 +269,6 @@ const ouvrirConsultation = async (dossier) => {
     chargementInteractions.value = false
   }
 
-  // Charger les documents validés
   chargementDocs.value = true
   try {
     const reponse = await api.get(`/api/documents/dossier/${dossier.id}`)
