@@ -20,7 +20,7 @@
             <p class="text-subtitle-1 text-grey-darken-1">Dossiers dont tous les documents ont été validés par l'assistant(e)</p>
           </v-col>
           <v-col cols="12" md="4">
-            <v-text-field v-model="recherche" label="Rechercher un patient..." prepend-inner-icon="mdi-magnify" variant="outlined" density="compact" clearable hide-details></v-text-field>
+            <v-text-field v-model="recherche" label="Rechercher un patient..." prepend-inner-icon="mdi-magnify" variant="solo" density="compact" clearable hide-details bg-color="white"></v-text-field>
           </v-col>
         </v-row>
 
@@ -134,7 +134,10 @@
               <v-divider></v-divider>
               <v-card-text class="pa-4">
                 <div v-if="estImage(doc.cheminFichier)" class="text-center">
-                  <v-img :src="urlFichier(doc.cheminFichier)" max-height="400" contain class="rounded-lg border"></v-img>
+                  <img :src="urlFichier(doc.cheminFichier)" style="max-height: 400px; max-width: 100%; border-radius: 8px; border: 1px solid #ccc;" />
+                  <div class="mt-2">
+                    <v-btn size="small" color="blue" variant="tonal" :href="urlFichier(doc.cheminFichier)" target="_blank" prepend-icon="mdi-eye">Ouvrir en grand</v-btn>
+                  </div>
                 </div>
                 <div v-else class="d-flex align-center justify-center pa-4">
                   <v-icon size="40" color="red" class="mr-3">mdi-file-pdf-box</v-icon>

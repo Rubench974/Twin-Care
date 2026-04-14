@@ -20,7 +20,7 @@
             <p class="text-subtitle-1 text-grey-darken-2">Gestion des flux et des documents</p>
           </v-col>
           <v-col cols="12" md="4">
-            <v-text-field v-model="recherche" label="Rechercher un patient..." prepend-inner-icon="mdi-magnify" variant="outlined" density="compact" clearable hide-details></v-text-field>
+            <v-text-field v-model="recherche" label="Rechercher un patient..." prepend-inner-icon="mdi-magnify" variant="solo" density="compact" clearable hide-details bg-color="white"></v-text-field>
           </v-col>
           <v-col cols="12" md="3" class="text-right">
             <v-btn size="large" color="#156500" class="text-white font-weight-bold" prepend-icon="mdi-account-plus" @click="dialogPatient = true">
@@ -132,7 +132,10 @@
               
               <v-card-text class="pa-4" v-if="doc.cheminFichier">
                 <div v-if="estImage(doc.cheminFichier)" class="text-center mb-3">
-                  <v-img :src="urlFichier(doc.cheminFichier)" max-height="300" contain class="rounded-lg border"></v-img>
+                  <img :src="urlFichier(doc.cheminFichier)" style="max-height: 300px; max-width: 100%; border-radius: 8px; border: 1px solid #ccc;" />
+                  <div class="mt-2">
+                    <v-btn size="small" color="blue" variant="tonal" :href="urlFichier(doc.cheminFichier)" target="_blank" prepend-icon="mdi-eye">Ouvrir en grand</v-btn>
+                  </div>
                 </div>
                 <div v-else class="d-flex align-center mb-3">
                   <v-icon size="30" color="red" class="mr-2">mdi-file-pdf-box</v-icon>
