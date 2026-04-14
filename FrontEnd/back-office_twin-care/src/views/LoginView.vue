@@ -48,6 +48,7 @@
     </v-main>
   </v-app>
 </template>
+
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -71,12 +72,13 @@ const soumettreConnexion = async () => {
 
     const token = reponse.data.token
     const role = reponse.data.role
+    const userId = reponse.data.patientId
 
     if (token) {
       localStorage.setItem('token', token)
       localStorage.setItem('role', role)
+      localStorage.setItem('userId', userId)
 
-      // C'EST ICI QU'ON A CORRIGÉ LE MOT : ASSISTANT_MEDICAL
       if (role === 'MEDECIN') {
         router.push('/medecin')
       } else if (role === 'ASSISTANT_MEDICAL' || role === 'ASSISTANT') {
@@ -89,7 +91,7 @@ const soumettreConnexion = async () => {
     if (err.response && err.response.status === 403) {
       erreur.value = "Identifiants incorrects."
     } else if (err.response && err.response.status === 404) {
-      erreur.value = "Utilisateur introuvable. Le serveur a-t-il effacé la base H2 ?"
+      erreur.value = "Utilisateur introuvable."
     } else {
       erreur.value = "Erreur de connexion au serveur."
     }

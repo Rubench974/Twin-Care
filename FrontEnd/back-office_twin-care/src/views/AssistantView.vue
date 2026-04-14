@@ -110,7 +110,7 @@
           </div>
 
           <v-alert v-else-if="documents.length === 0" type="info" variant="tonal">
-            Aucun document trouvé pour ce patient (ID: {{ patientSelectionne?.id }}).
+            Aucun document trouvé pour ce patient.
           </v-alert>
 
           <v-list v-else lines="three">
@@ -151,42 +151,33 @@ import api from '../services/api'
 
 const router = useRouter()
 
-// --- LOGIQUE GÉNÉRALE ---
 const deconnexion = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('role')
+  localStorage.removeItem('userId')
   router.push('/login')
 }
 
-// --- VRAIE LISTE DE PATIENTS ---
 const patients = ref([])
 const chargementTableau = ref(false)
 
-// Cette fonction "aspire" les utilisateurs ayant le rôle PATIENT
 const chargerPatients = async () => {
   chargementTableau.value = true
   try {
-    // Note pour l'intégration : Adapte l'URL '/api/users' si ton backend utilise '/api/dossiers' ou autre chose.
-    // L'idéal est une route côté Spring Boot qui renvoie : List<Utilisateur> findByRole("PATIENT")
-    const reponse = await api.get('/api/users') 
-    
-    // On filtre pour n'afficher que les patients (pas les autres assistants ou médecins)
+    const reponse = await api.get('/api/users')
     patients.value = reponse.data.filter(u => u.role === 'PATIENT')
   } catch (erreur) {
-    console.error("Erreur de récupération des patients. As-tu une route GET /api/users sur ton backend ?", erreur)
-    // En cas d'erreur de route, on vide le tableau pour éviter de bloquer l'interface
+    console.error("Erreur de récupération des patients.", erreur)
     patients.value = []
   } finally {
     chargementTableau.value = false
   }
 }
 
-// Lancement automatique au chargement de la page
 onMounted(() => {
   chargerPatients()
 })
 
-// --- LOGIQUE : NOUVEAU PATIENT ---
 const dialogPatient = ref(false)
 const chargementPatient = ref(false)
 const msgCreation = ref('')
@@ -197,15 +188,10 @@ const creerPatient = async () => {
   chargementPatient.value = true
   msgCreation.value = ''
   try {
-    // 1. On envoie les infos au serveur (PostgreSQL)
     await api.post('/api/auth/register', nouveau.value)
     typeMsg.value = 'success'
     msgCreation.value = "Patient créé avec succès dans la base !"
-    
-    // 2. On rafraîchit immédiatement le tableau pour le voir apparaître
     await chargerPatients()
-
-    // 3. On nettoie le formulaire
     nouveau.value = { nom: '', prenom: '', dateNaissance: '', email: '', motDePasse: '', role: 'PATIENT', sexe: null }
     setTimeout(() => { dialogPatient.value = false; msgCreation.value = '' }, 2000)
   } catch (erreur) {
@@ -216,16 +202,16 @@ const creerPatient = async () => {
   }
 }
 
-// --- LOGIQUE : GESTION DES DOCUMENTS ---
 const dialogDossier = ref(false)
 const patientSelectionne = ref(null)
 const documents = ref([])
 const chargementDocs = ref(false)
+const dossierId = ref(null)
 
 const couleurStatut = (statut) => {
   if (statut === 'VALIDE') return 'green'
   if (statut === 'REFUSE') return 'red'
-  return 'orange' 
+  return 'orange'
 }
 
 const ouvrirDossier = async (patient) => {
@@ -235,8 +221,10 @@ const ouvrirDossier = async (patient) => {
   documents.value = []
 
   try {
-    // On utilise l'ID du patient récupéré depuis la base de données
-    const reponse = await api.get(`/api/documents/dossier/${patient.id}`)
+    const dossierReponse = await api.get(`/api/dossiers/patient/${patient.id}`)
+    dossierId.value = dossierReponse.data.id
+
+    const reponse = await api.get(`/api/documents/dossier/${dossierId.value}`)
     documents.value = reponse.data
   } catch (erreur) {
     console.error("Erreur récupération documents:", erreur)
@@ -247,11 +235,14 @@ const ouvrirDossier = async (patient) => {
 
 const validerDocument = async (documentId, decision) => {
   try {
+    const assistantId = localStorage.getItem('userId')
     await api.post(`/api/validations/document/${documentId}`, {
       decision: decision,
-      commentaire: "Traité par l'assistant(e)"
+      commentaire: "Traité par l'assistant(e)",
+      assistantMedicalId: Number(assistantId)
     })
-    ouvrirDossier(patientSelectionne.value)
+    const reponse = await api.get(`/api/documents/dossier/${dossierId.value}`)
+    documents.value = reponse.data
   } catch (erreur) {
     console.error("Erreur de validation:", erreur)
     alert("Erreur lors de la validation.")

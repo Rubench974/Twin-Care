@@ -40,19 +40,24 @@ public class ChatbotSessionService {
     private final ChatbotTriggerEngineService triggerEngineService;
     private final ChatbotQuestionCatalogService catalogService;
 
+    private final SecurityHelperService securityHelperService;
+
     public ChatbotSessionService(AppUtilisateurRepository appUtilisateurRepository,
                                  DossierPatientRepository dossierPatientRepository,
                                  InteractionChatbotRepository interactionChatbotRepository,
                                  ChatbotTriggerEngineService triggerEngineService,
-                                 ChatbotQuestionCatalogService catalogService) {
+                                 ChatbotQuestionCatalogService catalogService,
+                                 SecurityHelperService securityHelperService) {
         this.appUtilisateurRepository = appUtilisateurRepository;
         this.dossierPatientRepository = dossierPatientRepository;
         this.interactionChatbotRepository = interactionChatbotRepository;
         this.triggerEngineService = triggerEngineService;
         this.catalogService = catalogService;
+        this.securityHelperService = securityHelperService;
     }
-
+    
     public ChatbotSessionResponse demarrerSession(Long patientId, int limit) {
+        securityHelperService.checkPatientAccess(patientId);
         AppUtilisateur patient = appUtilisateurRepository.findById(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient introuvable"));
 
@@ -80,12 +85,16 @@ public class ChatbotSessionService {
 
     @Transactional
     public InteractionChatbot enregistrerReponse(Long patientId, Long dossierId, ChatbotAnswerRequest request) {
+        securityHelperService.checkPatientAccess(patientId);
         AppUtilisateur patient = appUtilisateurRepository.findById(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient introuvable"));
 
         DossierPatient dossier = dossierPatientRepository.findById(dossierId)
                 .orElseThrow(() -> new ResourceNotFoundException("Dossier introuvable"));
 
+        if (!dossier.getPatient().getId().equals(patientId)) {
+             throw new BadRequestException("Le dossier n'appartient pas au patient");
+}
         InteractionChatbot interaction = new InteractionChatbot();
         interaction.setPatient(patient);
         interaction.setDossierPatient(dossier);
