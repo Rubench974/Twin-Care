@@ -132,7 +132,8 @@
               
               <v-card-text class="pa-4" v-if="doc.cheminFichier">
                 <div v-if="estImage(doc.cheminFichier)" class="text-center mb-3">
-                  <img :src="urlFichier(doc.cheminFichier)" crossorigin="anonymous" style="max-height: 300px; max-width: 100%; border-radius: 8px; border: 1px solid #ccc;" />
+                  <img :src="urlFichier(doc.cheminFichier)" style="max-height: 300px; max-width: 100%; border-radius: 8px; border: 1px solid #ccc;" />
+                  <div class="mt-2">
                     <v-btn size="small" color="blue" variant="tonal" :href="urlFichier(doc.cheminFichier)" target="_blank" prepend-icon="mdi-eye">Ouvrir en grand</v-btn>
                   </div>
                 </div>
