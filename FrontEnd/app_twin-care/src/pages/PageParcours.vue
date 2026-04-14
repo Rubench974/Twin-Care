@@ -11,40 +11,38 @@
 
     <div class="w-100 px-5 mt-2" style="max-width: 380px;">
       
-      <v-card class="mb-10 rounded-xl" elevation="3" style="border: 2px solid white; overflow: visible !important;">
-        
+      <v-card class="mb-14 rounded-xl" elevation="3" style="border: 2px solid white; overflow: visible !important;">
         <div style="height: 110px; background-color: #eaf4fc; position: relative; border-radius: 24px 24px 0 0;" class="d-flex justify-center">
-          
           <img 
             :src="imageInsomnie" 
             style="height: 155px; position: absolute; bottom: 0; object-fit: contain; z-index: 1;" 
           />
-          
         </div>
-
         <div class="py-3 text-center bg-white font-weight-bold" style="color: #37474F; font-size: 1rem; position: relative; z-index: 2; border-radius: 0 0 24px 24px;">
           Insomnie
         </div>
       </v-card>
 
-      <v-card class="mb-10 rounded-xl overflow-hidden" elevation="3" style="border: 2px solid white;">
-        <div style="height: 110px; background-color: #eaf4fc;" class="d-flex justify-center align-center pa-2">
-          <div style="width: 100%; height: 100%; border: 1.5px dashed #90caf9; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #90caf9; font-size: 0.8rem;">
-            Illustration Grossesse
-          </div>
+      <v-card class="mb-14 rounded-xl" elevation="3" style="border: 2px solid white; overflow: visible !important;">
+        <div style="height: 110px; background-color: #fce4ec; position: relative; border-radius: 24px 24px 0 0;" class="d-flex justify-center">
+          <img 
+            :src="imageGrossesse" 
+            style="height: 155px; position: absolute; bottom: 0; object-fit: contain; z-index: 1; transform: translateX(8px);" 
+          />
         </div>
-        <div class="py-3 text-center bg-white font-weight-bold" style="color: #37474F; font-size: 1rem;">
+        <div class="py-3 text-center bg-white font-weight-bold" style="color: #37474F; font-size: 1rem; position: relative; z-index: 2; border-radius: 0 0 24px 24px;">
           Grossesse
         </div>
       </v-card>
 
-      <v-card class="mb-10 rounded-xl overflow-hidden" elevation="3" style="border: 2px solid white;">
-        <div style="height: 110px; background-color: #eaf4fc;" class="d-flex justify-center align-center pa-2">
-          <div style="width: 100%; height: 100%; border: 1.5px dashed #90caf9; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #90caf9; font-size: 0.8rem;">
-            Illustration Thérapie
-          </div>
+      <v-card class="mb-14 rounded-xl" elevation="3" style="border: 2px solid white; overflow: visible !important;">
+        <div style="height: 110px; background-color: #e8f5e9; position: relative; border-radius: 24px 24px 0 0;" class="d-flex justify-center">
+          <img 
+            :src="imageTherapie" 
+            style="height: 155px; position: absolute; bottom: 0; object-fit: contain; z-index: 1;" 
+          />
         </div>
-        <div class="py-3 text-center bg-white font-weight-bold" style="color: #37474F; font-size: 1rem;">
+        <div class="py-3 text-center bg-white font-weight-bold" style="color: #37474F; font-size: 1rem; position: relative; z-index: 2; border-radius: 0 0 24px 24px;">
           Thérapie
         </div>
       </v-card>
@@ -56,6 +54,8 @@
 <script setup>
 import { inject } from 'vue'
 import imageInsomnie from '../assets/insomnie.png'
+import imageGrossesse from '../assets/grossesse.png'
+import imageTherapie from '../assets/therapie.png'
 
 const toggleDrawer = inject('toggleDrawer')
 </script>
