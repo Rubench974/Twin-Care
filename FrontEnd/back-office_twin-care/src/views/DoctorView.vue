@@ -67,7 +67,6 @@
       </v-container>
     </v-main>
 
-    <!-- Dialog consultation détaillée -->
     <v-dialog v-model="dialogConsultation" max-width="900px" scrollable>
       <v-card class="rounded-xl pa-2">
         <v-card-title class="text-h5 font-weight-bold d-flex align-center mt-2" style="color: #156500;">
@@ -77,7 +76,6 @@
         <v-divider></v-divider>
 
         <v-card-text style="max-height: 70vh; overflow-y: auto;">
-          <!-- Section Chatbot -->
           <h3 class="text-h6 font-weight-bold mb-3 mt-2" style="color: #37474F;">
             <v-icon start color="blue" class="mr-1">mdi-chat</v-icon> Réponses du Chatbot (Anamnèse)
           </h3>
@@ -107,7 +105,6 @@
             </tbody>
           </v-table>
 
-          <!-- Section Documents -->
           <h3 class="text-h6 font-weight-bold mb-3" style="color: #37474F;">
             <v-icon start color="orange" class="mr-1">mdi-file-document-multiple</v-icon> Documents validés
           </h3>
@@ -130,16 +127,9 @@
               </v-card-title>
               <v-divider></v-divider>
               <v-card-text class="pa-4">
-                <!-- Si c'est une image -->
                 <div v-if="estImage(doc.nomFichier)" class="text-center">
-                  <v-img
-                    :src="urlFichier(doc.nomFichier)"
-                    max-height="400"
-                    contain
-                    class="rounded-lg border"
-                  ></v-img>
+                  <v-img :src="urlFichier(doc.nomFichier)" max-height="400" contain class="rounded-lg border"></v-img>
                 </div>
-                <!-- Si c'est un PDF ou autre -->
                 <div v-else class="d-flex align-center justify-center pa-4">
                   <v-icon size="40" color="red" class="mr-3">mdi-file-pdf-box</v-icon>
                   <div>
@@ -178,7 +168,6 @@ const deconnexion = () => {
   router.push('/login')
 }
 
-// --- Utilitaires fichiers ---
 const estImage = (nomFichier) => {
   if (!nomFichier) return false
   const ext = nomFichier.toLowerCase()
@@ -186,11 +175,9 @@ const estImage = (nomFichier) => {
 }
 
 const urlFichier = (nomFichier) => {
-  const token = localStorage.getItem('token')
-  return `${BASE_URL}/api/files/${nomFichier}?token=${token}`
+  return `${BASE_URL}/api/files/${nomFichier}`
 }
 
-// --- Chargement des dossiers prêts ---
 const dossiersPrets = ref([])
 const chargement = ref(false)
 
@@ -205,6 +192,11 @@ const chargerDossiers = async () => {
         let nbDocuments = 0
         let patientNom = 'Patient inconnu'
 
+        // Récupérer le nom du patient depuis le dossier lui-même
+        if (dossier.patient) {
+          patientNom = `${dossier.patient.nom} ${dossier.patient.prenom}`
+        }
+
         try {
           const docsReponse = await api.get(`/api/documents/dossier/${dossier.id}`)
           const docsValides = docsReponse.data.filter(d => d.statut === 'VALIDE')
@@ -212,17 +204,6 @@ const chargerDossiers = async () => {
           if (nbDocuments === 0) return null
         } catch (e) {
           return null
-        }
-
-        try {
-          const usersReponse = await api.get('/api/users')
-          const patients = usersReponse.data.filter(u => u.role === 'PATIENT')
-          const patient = patients.find(p => p.dossierId === dossier.id || p.id === dossier.id)
-          if (patient) {
-            patientNom = `${patient.nom} ${patient.prenom}`
-          }
-        } catch (e) {
-          console.error('Erreur récupération patient:', e)
         }
 
         return {
@@ -245,7 +226,6 @@ onMounted(() => {
   chargerDossiers()
 })
 
-// --- Consultation détaillée ---
 const dialogConsultation = ref(false)
 const consultationDossier = ref(null)
 const interactions = ref([])

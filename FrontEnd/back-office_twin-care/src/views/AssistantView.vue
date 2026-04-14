@@ -126,9 +126,12 @@
               </v-list-item-subtitle>
               
               <template v-slot:append>
-                <div v-if="doc.statut === 'EN_ATTENTE'" class="d-flex flex-column gap-2">
-                  <v-btn size="small" color="success" prepend-icon="mdi-check" @click="validerDocument(doc.id, 'VALIDER')" class="mb-2">Valider</v-btn>
-                  <v-btn size="small" color="error" prepend-icon="mdi-close" @click="validerDocument(doc.id, 'REFUSER')">Refuser</v-btn>
+                <div class="d-flex flex-column gap-1">
+                  <template v-if="doc.statut === 'EN_ATTENTE'">
+                    <v-btn size="small" color="success" prepend-icon="mdi-check" @click="validerDocument(doc.id, 'VALIDER')" class="mb-1">Valider</v-btn>
+                    <v-btn size="small" color="error" prepend-icon="mdi-close" @click="validerDocument(doc.id, 'REFUSER')" class="mb-1">Refuser</v-btn>
+                  </template>
+                  <v-btn size="small" color="grey-darken-1" variant="tonal" prepend-icon="mdi-delete" @click="supprimerDocument(doc.id)">Supprimer</v-btn>
                 </div>
               </template>
             </v-list-item>
@@ -246,6 +249,18 @@ const validerDocument = async (documentId, decision) => {
   } catch (erreur) {
     console.error("Erreur de validation:", erreur)
     alert("Erreur lors de la validation.")
+  }
+}
+
+const supprimerDocument = async (documentId) => {
+  if (!confirm("Voulez-vous vraiment supprimer ce document ?")) return
+  try {
+    await api.delete(`/api/documents/${documentId}`)
+    const reponse = await api.get(`/api/documents/dossier/${dossierId.value}`)
+    documents.value = reponse.data
+  } catch (erreur) {
+    console.error("Erreur suppression:", erreur)
+    alert("Erreur lors de la suppression.")
   }
 }
 </script>
