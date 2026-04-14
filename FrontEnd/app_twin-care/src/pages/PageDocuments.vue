@@ -1,0 +1,177 @@
+<template>
+  <v-container fluid class="pa-0 d-flex flex-column align-center" style="background: linear-gradient(180deg, #cae8fa 0%, #f4f9fd 40%, #f4f9fd 100%); min-height: 100vh; padding-bottom: 100px !important;">
+    
+    <div class="d-flex align-center w-100 px-4 mt-8 mb-6" style="max-width: 450px;">
+      <v-btn icon="mdi-menu" variant="text" color="#37474F" size="large" @click="toggleDrawer"></v-btn>
+      <h2 class="text-center flex-grow-1 text-white font-weight-black" style="font-size: 1.25rem; letter-spacing: 0.5px; text-shadow: 0px 2px 4px rgba(0,0,0,0.15);">
+        ENVOI DES DOCUMENTS
+      </h2>
+      <div style="width: 48px;"></div>
+    </div>
+
+    <div class="w-100 px-5 mb-6" style="max-width: 380px;">
+      <v-card color="white" class="pa-5 rounded-xl text-center" elevation="2">
+        <span class="text-body-1 font-weight-medium" style="color: #37474F; line-height: 1.4;">
+          J'envoie des documents à mon praticien pour compléter mon dossier !
+        </span>
+      </v-card>
+      <div style="width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 15px solid white; margin-left: 65%; filter: drop-shadow(0px 3px 2px rgba(0,0,0,0.05));"></div>
+    </div>
+
+    <v-row class="w-100 px-6 mt-2" style="max-width: 380px;" justify="center">
+      
+      <v-col cols="12" class="pb-6">
+        <v-card
+          @click="actionUpload('camera')"
+          class="d-flex flex-column align-center justify-center py-6"
+          elevation="0"
+          color="transparent"
+          v-ripple
+          style="border: 2px dashed #2A93D5; border-radius: 24px; cursor: pointer; background-color: rgba(255, 255, 255, 0.6) !important;"
+        >
+          <v-icon size="40" color="#2A93D5" class="mb-2">mdi-camera-outline</v-icon>
+          <span class="font-weight-bold" style="color: #2c3e50; font-size: 1.05rem;">Prendre une photo</span>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" class="pb-5">
+        <v-select
+          v-model="documentType"
+          :items="typeOptions"
+          item-title="titre"
+          item-value="valeur"
+          label="Type de document"
+          placeholder="Veuillez choisir une option"
+          variant="outlined"
+          color="#2c3e50"
+          bg-color="white"
+          rounded="xl"
+          hide-details
+          class="font-weight-medium"
+        ></v-select>
+      </v-col>
+
+      <v-col cols="12" class="pt-0">
+        <v-btn
+          variant="outlined"
+          color="#2c3e50"
+          block
+          rounded="xl"
+          size="large"
+          class="text-none font-weight-bold bg-white"
+          style="border-width: 1.5px; height: 50px;"
+          @click="actionUpload('file')"
+          :loading="isUploading"
+        >
+          Parcourir mes fichiers
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <input type="file" accept="image/*" capture="environment" ref="cameraInput" class="d-none" @change="gererFichierSelectionne" />
+    <input type="file" accept="image/*,application/pdf" ref="fileInput" class="d-none" @change="gererFichierSelectionne" />
+
+    <v-snackbar v-model="showSnackbar" :color="snackbarColor" elevation="6" rounded="pill" timeout="3000" location="bottom" class="mb-16">
+      <div class="d-flex align-center w-100 px-1">
+        <v-icon :icon="snackbarIcon" color="white" class="mr-3" size="24"></v-icon>
+        <span class="text-body-2 text-white font-weight-medium">{{ snackbarText }}</span>
+        <v-spacer></v-spacer>
+        <v-btn variant="tonal" color="white" size="small" class="text-none font-weight-bold rounded-pill ml-3" @click="showSnackbar = false">
+          Fermer
+        </v-btn>
+      </div>
+    </v-snackbar>
+
+  </v-container>
+</template>
+
+<script setup>
+import { ref, inject } from 'vue'
+
+const toggleDrawer = inject('toggleDrawer')
+
+const showSnackbar = ref(false)
+const snackbarText = ref("")
+const snackbarColor = ref("#2c3e50")
+const snackbarIcon = ref("mdi-check-circle")
+
+const isUploading = ref(false)
+const cameraInput = ref(null)
+const fileInput = ref(null)
+
+const documentType = ref(null) 
+
+const typeOptions = [
+  { titre: 'Ordonnance', valeur: 'ORDONNANCE' },
+  { titre: 'Résultats Biologie', valeur: 'BIOLOGIE' },
+  { titre: 'Imagerie (Radio, IRM...)', valeur: 'IMAGERIE' },
+  { titre: 'Courrier médical', valeur: 'COURRIER' },
+  { titre: 'Certificat médical', valeur: 'CERTIFICAT' },
+  { titre: 'Formulaire CERFA', valeur: 'CERFA' },
+  { titre: 'Autre document', valeur: 'AUTRE' }
+]
+
+const url = "https://twincare-t2xu.onrender.com/api/documents"
+
+function actionUpload(source) {
+  if (!documentType.value) {
+    afficherNotification("Veuillez choisir un type de document avant d'importer.", "#E53935", "mdi-alert-circle")
+    return
+  }
+  
+  if (source === 'camera') cameraInput.value.click()
+  if (source === 'file') fileInput.value.click()
+}
+
+function afficherNotification(message, couleur = "#2c3e50", icone = "mdi-check-circle") {
+  snackbarText.value = message
+  snackbarColor.value = couleur
+  snackbarIcon.value = icone
+  showSnackbar.value = true
+}
+
+function gererFichierSelectionne(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  envoyerDocument(file)
+  event.target.value = ''
+}
+
+function envoyerDocument(fichierChoisi) {
+  isUploading.value = true
+  const token = localStorage.getItem('token') 
+  const dossierId = localStorage.getItem('dossierId')
+  
+  if (!dossierId) {
+    afficherNotification("Erreur d'authentification.", "#E53935", "mdi-alert-circle")
+    isUploading.value = false
+    return
+  }
+
+  const uploadUrl = `${url}/upload/dossier/${dossierId}`
+  
+  const formData = new FormData()
+  formData.append('file', fichierChoisi)
+  formData.append('type', documentType.value)
+  
+  const dateIso = new Date().toISOString().split('T')[0]
+  formData.append('dateDocument', dateIso)
+
+  fetch(uploadUrl, {
+    method: "POST",
+    headers: { "Authorization": "Bearer " + token },
+    body: formData
+  })
+  .then(async (response) => {
+    if (response.ok) {
+      afficherNotification("Document envoyé avec succès !", "#4CAF50", "mdi-check-circle")
+      documentType.value = null 
+    } else {
+      afficherNotification("Erreur lors de l'envoi du document.", "#E53935", "mdi-alert-circle")
+    }
+  })
+  .catch(() => afficherNotification("Erreur réseau.", "#E53935", "mdi-wifi-strength-1-alert"))
+  .finally(() => isUploading.value = false)
+}
+</script>
