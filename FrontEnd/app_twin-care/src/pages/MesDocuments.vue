@@ -25,8 +25,11 @@
               </v-avatar>
             </template>
             
-            <v-list-item-title class="font-weight-bold text-body-1 mb-1" style="color: #2c3e50;">
-              {{ formatType(doc.type) }}
+            <v-list-item-title class="font-weight-bold text-body-1 mb-1 d-flex align-center justify-space-between" style="color: #2c3e50;">
+              <span class="text-truncate mr-2">{{ formatType(doc.type) }}</span>
+              <v-chip size="x-small" :color="getCouleurStatut(doc.statut)" class="font-weight-bold text-white" style="flex-shrink: 0;">
+                {{ getTexteStatut(doc.statut) }}
+              </v-chip>
             </v-list-item-title>
             <v-list-item-subtitle style="font-size: 0.85rem; color: #546E7A;">
               {{ doc.nomFichier }}
@@ -175,6 +178,18 @@ function getIconForType(type) {
     'AUTRE': 'mdi-file-document-outline'
   }
   return icons[type] || 'mdi-file-document-outline'
+}
+
+function getCouleurStatut(statut) {
+  if (statut === 'VALIDE') return '#4CAF50';
+  if (statut === 'REFUSE') return '#E53935';
+  return '#FF9800'; 
+}
+
+function getTexteStatut(statut) {
+  if (statut === 'VALIDE') return 'Validé';
+  if (statut === 'REFUSE') return 'À refaire';
+  return 'En attente';
 }
 
 function confirmerSuppression(id) {
