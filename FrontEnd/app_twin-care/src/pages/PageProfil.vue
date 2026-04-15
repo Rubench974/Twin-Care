@@ -16,23 +16,39 @@
           <v-avatar size="90" color="#eaf4fc" class="mb-3" style="border: 3px solid #2A93D5;">
             <v-icon size="50" color="#2A93D5">mdi-account</v-icon>
           </v-avatar>
-          <h3 class="text-h6 font-weight-bold text-capitalize" style="color: #37474F;">{{ infosPatient.prenom }} {{ infosPatient.nom }}</h3>
-          <v-chip color="#2A93D5" size="small" class="mt-1 font-weight-bold" variant="flat">{{ infosPatient.role }}</v-chip>
+          <h3 class="text-h6 font-weight-bold text-capitalize" style="color: #37474F; line-height: 1.2;">{{ infosPatient.prenom }} {{ infosPatient.nom }}</h3>
+          <v-chip color="#2A93D5" size="small" class="mt-2 font-weight-bold" variant="flat">{{ infosPatient.role }}</v-chip>
         </div>
 
         <v-divider class="mb-4"></v-divider>
 
         <v-list density="compact" bg-color="transparent">
+          
           <v-list-item prepend-icon="mdi-email-outline" class="px-0">
             <v-list-item-title class="text-caption" style="color: #9e9e9e;">Adresse email</v-list-item-title>
             <v-list-item-subtitle class="font-weight-medium" style="color: #37474F; font-size: 0.95rem;">{{ infosPatient.email }}</v-list-item-subtitle>
           </v-list-item>
 
-          <v-list-item prepend-icon="mdi-identifier" class="px-0 mt-2">
-            <v-list-item-title class="text-caption" style="color: #9e9e9e;">Numéro de dossier patient</v-list-item-title>
-            <v-list-item-subtitle class="font-weight-medium" style="color: #37474F; font-size: 0.95rem;">N° {{ infosPatient.dossierId }}</v-list-item-subtitle>
+          <v-list-item prepend-icon="mdi-phone-outline" class="px-0 mt-2">
+            <v-list-item-title class="text-caption" style="color: #9e9e9e;">Téléphone</v-list-item-title>
+            <v-list-item-subtitle class="font-weight-medium" style="color: #37474F; font-size: 0.95rem;">Non renseigné</v-list-item-subtitle>
           </v-list-item>
+
+          <v-list-item prepend-icon="mdi-calendar-blank-outline" class="px-0 mt-2">
+            <v-list-item-title class="text-caption" style="color: #9e9e9e;">Date de naissance</v-list-item-title>
+            <v-list-item-subtitle class="font-weight-medium" style="color: #37474F; font-size: 0.95rem;">Non renseignée</v-list-item-subtitle>
+          </v-list-item>
+
+          <v-list-item prepend-icon="mdi-card-account-details-outline" class="px-0 mt-2">
+            <v-list-item-title class="text-caption" style="color: #9e9e9e;">N° Sécurité Sociale</v-list-item-title>
+            <v-list-item-subtitle class="font-weight-medium" style="color: #37474F; font-size: 0.95rem;">Non renseigné</v-list-item-subtitle>
+          </v-list-item>
+
         </v-list>
+        
+        <v-btn block variant="tonal" color="#2A93D5" class="mt-6 text-none font-weight-bold rounded-lg">
+          Modifier mes informations
+        </v-btn>
 
       </v-card>
     </div>
@@ -49,21 +65,19 @@ const infosPatient = ref({
   prenom: 'Non renseigné',
   nom: '',
   email: 'Non renseigné',
-  role: 'Utilisateur',
-  dossierId: 'X'
+  role: 'Utilisateur'
 })
 
 onMounted(() => {
   infosPatient.value.prenom = localStorage.getItem('prenom') || 'Non renseigné'
   infosPatient.value.nom = localStorage.getItem('nom') || ''
   infosPatient.value.email = localStorage.getItem('email') || 'Non renseigné'
-  infosPatient.value.dossierId = localStorage.getItem('dossierId') || 'N/A'
   
   let roleBrut = localStorage.getItem('role') || 'Utilisateur'
   infosPatient.value.role = roleBrut === 'PATIENT' ? 'Patient' : roleBrut
 })
 
 function retour() {
-  router.push('/documents') 
+  router.push('/documents')
 }
 </script>

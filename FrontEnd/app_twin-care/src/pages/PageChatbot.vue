@@ -182,7 +182,8 @@ function envoyerReponse(choix) {
           questionActuelle.value = "Bilan complet ! Vous avez atteint le maximum de questions pour aujourd'hui. ✅"
           isProcessing.value = false
           return
-        }*/
+        }
+        */
        
         if (!modeContinuer.value && compteurQuestionsSession.value >= 10) {
           questionId.value = null

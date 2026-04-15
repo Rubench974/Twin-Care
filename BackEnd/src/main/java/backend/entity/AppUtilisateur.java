@@ -1,11 +1,22 @@
 package backend.entity;
 
-import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonIgnore; // Import obligatoire pour bloquer la boucle infinie
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "app_utilisateur")
@@ -28,7 +39,7 @@ public class AppUtilisateur {
     private String email;
 
     @Column(nullable = false)
-    @JsonIgnore // Sécurité : ne jamais envoyer le mot de passe au Front-End
+    @JsonIgnore
     private String motDePasse;
 
     @Enumerated(EnumType.STRING)
@@ -39,15 +50,16 @@ public class AppUtilisateur {
     @Column(nullable = false, length = 30)
     private Sexe sexe;
 
-    @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private DossierPatient dossierPatient;
 
-    @OneToMany(mappedBy = "patient")
-    @JsonIgnore // Casse la boucle infinie de sérialisation JSON
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<InteractionChatbot> interactionsChatbot = new ArrayList<>();
 
-    @OneToMany(mappedBy = "assistantMedical")
-    @JsonIgnore // Casse la boucle infinie de sérialisation JSON
+    @OneToMany(mappedBy = "assistantMedical", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Validation> validationsRealisees = new ArrayList<>();
 
     public AppUtilisateur() {

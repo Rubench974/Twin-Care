@@ -1,7 +1,7 @@
 package backend.config;
 
-import backend.security.JwtAuthenticationFilter;
-import backend.service.CustomUserDetailsService;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,7 +16,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import backend.security.JwtAuthenticationFilter;
+import backend.service.CustomUserDetailsService;
 
 @Configuration
 public class SecurityConfig {
@@ -25,7 +26,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService userService;
 
     public SecurityConfig(JwtAuthenticationFilter jwtFilter,
-                          CustomUserDetailsService userService) {
+            CustomUserDetailsService userService) {
         this.jwtFilter = jwtFilter;
         this.userService = userService;
     }
@@ -39,6 +40,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/test", "/h2-console/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/files/**").permitAll()
+
+                        .requestMatchers("/api/users/**")
+                        .hasAnyAuthority("ASSISTANT_MEDICAL", "MEDECIN")
 
                         .requestMatchers("/api/dossiers/**")
                         .hasAnyAuthority("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
@@ -46,10 +51,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/documents/**")
                         .hasAnyAuthority("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
 
-                        .requestMatchers("/api/files/**")
-                        .hasAnyAuthority("PATIENT", "ASSISTANT_MEDICAL", "MEDECIN")
-
                         .requestMatchers("/api/validations/**")
+                        .hasAnyAuthority("ASSISTANT_MEDICAL", "MEDECIN")
+
+                        .requestMatchers("/api/interactions/**")
                         .hasAnyAuthority("ASSISTANT_MEDICAL", "MEDECIN")
 
                         .requestMatchers("/api/chatbot/**")
@@ -64,8 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**")
                         .hasAnyAuthority("ADMIN")
 
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .userDetailsService(userService);
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -83,8 +87,9 @@ public class SecurityConfig {
                 "http://192.168.1.17:3000",
                 "http://192.168.1.118:3000",
                 "http://localhost:5173",
-                "https://twincare-t2xu.onrender.com"
-        ));
+                "https://twincare-t2xu.onrender.com",
+                "https://twin-care-patient.onrender.com",
+                "https://twincare-backoffice.onrender.com"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
