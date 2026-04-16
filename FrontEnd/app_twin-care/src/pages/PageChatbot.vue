@@ -168,7 +168,7 @@ function envoyerReponse(choix) {
     .then(response => {
       if (response.ok) {
         compteurQuestionsSession.value++
-        /*
+        
         if (!modeContinuer.value && compteurQuestionsSession.value >= 2) {
           questionId.value = null
           questionActuelle.value = "Vos 2 questions quotidiennes sont terminées. Merci pour votre aide ! 🎉"
@@ -183,23 +183,7 @@ function envoyerReponse(choix) {
           isProcessing.value = false
           return
         }
-        */
-       
-        if (!modeContinuer.value && compteurQuestionsSession.value >= 10) {
-          questionId.value = null
-          questionActuelle.value = "Phase 1 terminée. Voulez-vous continuer ?"
-          isProcessing.value = false
-          return
-        }
-
-        if (modeContinuer.value && compteurQuestionsSession.value >= 50) {
-          bilanTermine.value = true
-          questionId.value = null
-          questionActuelle.value = "Bilan complet ! Vous avez terminé toutes les questions."
-          isProcessing.value = false
-          return
-        }
-
+      
         getQuestion()
       } else {
         console.error("Le serveur a refusé la réponse. Statut :", response.status)

@@ -1,8 +1,19 @@
 package backend.entity;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "interaction_chatbot")
@@ -38,12 +49,12 @@ public class InteractionChatbot {
 
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
-    @JsonIgnore // Coupe le lien vers le patient
+    @JsonIgnore 
     private AppUtilisateur patient;
 
     @ManyToOne
     @JoinColumn(name = "dossier_patient_id", nullable = false)
-    @JsonIgnore // Coupe le lien vers le dossier
+    @JsonIgnore 
     private DossierPatient dossierPatient;
 
     public InteractionChatbot() {
